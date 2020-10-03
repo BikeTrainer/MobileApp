@@ -59,6 +59,7 @@ class AuthActivity : AppCompatActivity() {
     private fun setup(){
         title="Autenticacion"
 
+
         //Registrar usuarios
         signUpButton.setOnClickListener{
 

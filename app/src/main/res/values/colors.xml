@@ -2,5 +2,9 @@
 <resources>
     <color name="colorPrimary">#FF9900</color>
     <color name="colorPrimaryDark">#C87901</color>
-    <color name="colorAccent">#FBD769</color>fir
+    <color name="colorAccent">#FBD769</color>
+
+    <color name="colorButtons">#F9CB9C</color>
+    <color name="colorBackgroung">#FFB240</color>
+    <color name="colorBikeTrainer">#FD8A17</color>
 </resources>
