@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "229855164248",
+    "firebase_url": "https://biketrainer-db.firebaseio.com",
+    "project_id": "biketrainer-db",
+    "storage_bucket": "biketrainer-db.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:229855164248:android:6af3d4bf43642f2cdf572d",
+        "android_client_info": {
+          "package_name": "co.edu.unal.biketrainer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "229855164248-ameo3hap0jqkf9444e5k3ev6hd077fmv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAK5xIY_IRv7V7eCXvdYDOC3jO66W6mgbU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "229855164248-ameo3hap0jqkf9444e5k3ev6hd077fmv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
