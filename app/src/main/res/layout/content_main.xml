@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:backgroundTintMode="src_over"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/app_bar_main">
 
@@ -19,8 +20,8 @@
         app:navGraph="@navigation/mobile_navigation" />
 
     <LinearLayout
-        android:layout_width="197dp"
-        android:layout_height="214dp"
+        android:layout_width="230dp"
+        android:layout_height="112dp"
         android:orientation="vertical"
         tools:layout_editor_absoluteX="92dp"
         tools:layout_editor_absoluteY="1dp">
@@ -29,6 +30,8 @@
             android:id="@+id/logOutButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/holo_red_dark"
+            android:backgroundTintMode="src_atop"
             android:text="Cerrar sesion" />
 
         <TextView

@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorBackgroung"
     tools:context=".SignUpActivity">
 
     <LinearLayout
@@ -48,8 +49,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:inputType="textPersonName"
-            android:hint="Nombre" />
+            android:hint="Nombre"
+            android:inputType="textPersonName" />
 
         <EditText
             android:id="@+id/signUpLastnameEditText"
@@ -84,6 +85,14 @@
             android:id="@+id/signUpSaveButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:backgroundTint="@color/colorButtons"
             android:text="Registrarse" />
+
+        <Button
+            android:id="@+id/signUpCancelButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/white"
+            android:text="Cancelar" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
