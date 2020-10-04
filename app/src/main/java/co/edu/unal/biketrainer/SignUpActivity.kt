@@ -27,6 +27,8 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun setup(email: String){
+
+        title="Registrate"
         
         signUpEmailEditText.setText(email)
 
@@ -46,7 +48,11 @@ class SignUpActivity : AppCompatActivity() {
 
                 }
             }
+        }
 
+        //volver a la ventana anterior
+        signUpCancelButton.setOnClickListener{
+            onBackPressed()
         }
 
     }
