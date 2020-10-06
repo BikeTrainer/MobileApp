@@ -16,4 +16,12 @@
     <string name="facebook_app_id">390524631967880</string>
     <string name="fb_login_protocol_scheme">fb390524631967880</string>
 
+    <string name="msg_long_press_map_to_place_waypoint">Long press on the map to place a waypoint</string>
+    <string name="start_navigation">Start Navigation</string>
+    <string name="no_routes">No routes found</string>
+    <string name="route_request_failed">Route request failed</string>
+    <string name="steps_in_route">Steps in route</string>
+    <string name="recording_route">Record Route</string>
+    <string name="routes">Routes</string>
+
 </resources>

@@ -22,4 +22,11 @@
         android:name="co.edu.unal.biketrainer.ui.slideshow.SlideshowFragment"
         android:label="@string/menu_slideshow"
         tools:layout="@layout/fragment_slideshow" />
+    <fragment
+        android:id="@+id/nav_routes"
+        android:name="co.edu.unal.biketrainer.ui.routes.RoutesFragment"
+        android:label="nav_routes"
+        tools:layout="@layout/fragment_routes" />
+
+
 </navigation>
