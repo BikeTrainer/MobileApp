@@ -23,37 +23,7 @@
         app:headerLayout="@layout/nav_header_main"
         app:menu="@menu/activity_main_drawer">
 
-        <LinearLayout
-            android:layout_width="230dp"
-            android:layout_height="112dp"
-            android:layout_gravity="bottom|center_horizontal"
-            android:orientation="vertical"
-            tools:ignore="MissingConstraints"
-            tools:layout_editor_absoluteX="92dp"
-            tools:layout_editor_absoluteY="1dp">
 
-            <Button
-                android:id="@+id/logOutButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@android:color/holo_red_dark"
-                android:backgroundTintMode="src_atop"
-                android:text="Cerrar sesion" />
-
-            <TextView
-                android:id="@+id/emailTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Email"
-                android:textAlignment="textEnd" />
-
-            <TextView
-                android:id="@+id/providerTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Provider"
-                android:textAlignment="textEnd" />
-        </LinearLayout>
     </com.google.android.material.navigation.NavigationView>
 
 </androidx.drawerlayout.widget.DrawerLayout>
