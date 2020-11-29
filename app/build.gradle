@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "co.edu.unal.biketrainer"
-        minSdkVersion 23
+        minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -59,7 +59,6 @@ dependencies {
     implementation 'com.mapbox.mapboxsdk:mapbox-sdk-services'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
-
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
