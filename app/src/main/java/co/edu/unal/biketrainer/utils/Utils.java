@@ -20,7 +20,6 @@ import java.util.Random;
 
 import timber.log.Timber;
 
-//import com.mapbox.common.logger.MapboxLogger;
 
 public class Utils {
 

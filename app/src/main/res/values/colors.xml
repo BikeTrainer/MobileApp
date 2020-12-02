@@ -7,4 +7,6 @@
     <color name="colorButtons">#F9CB9C</color>
     <color name="colorBackgroung">#FFB240</color>
     <color name="colorBikeTrainer">#FD8A17</color>
+
+    <color name="mapboxGreen">#FD8A17</color>
 </resources>

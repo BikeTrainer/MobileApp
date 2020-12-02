@@ -90,7 +90,7 @@ class ProfileFragment : Fragment() {
     }
 
     companion object {
-        private const val ARGS_NAME = "email"
+        const val ARGS_NAME = "email"
         fun newInstance(name: String): Fragment{
             val args = Bundle()
             args.putString(ARGS_NAME, name)
