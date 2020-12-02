@@ -1,6 +1,9 @@
 package co.edu.unal.biketrainer.ui.routes
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.app.Dialog
+import android.content.DialogInterface
 import android.location.Location
 import android.os.Bundle
 import android.os.Looper
@@ -10,9 +13,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import co.edu.unal.biketrainer.R
+import co.edu.unal.biketrainer.ui.home.HomeFragment
 import co.edu.unal.biketrainer.utils.Utils
 import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT
 import com.google.android.material.snackbar.Snackbar
@@ -41,6 +46,8 @@ import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.ui.map.NavigationMapboxMap
 import kotlinx.android.synthetic.main.fragment_routes.*
+import kotlinx.android.synthetic.main.save_route_dialog.*
+import kotlinx.android.synthetic.main.save_route_dialog.view.*
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
@@ -54,6 +61,7 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
         private const val DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L
         private const val DEFAULT_MAX_WAIT_TIME: Long = DEFAULT_INTERVAL_IN_MILLISECONDS * 5
         const val ARGS_NAME = "email"
+
         fun newInstance(name: String): Fragment{
             val args = Bundle()
             args.putString(ARGS_NAME, name)
@@ -77,7 +85,8 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
     private var level: String? = null
     private var name: String? = null
     private var origin: Location? = null
-    private var securityLevel: Integer? = null
+    private var securityLevel: Float? = null
+
 
     private val db = FirebaseFirestore.getInstance()
     private val email by lazy { arguments?.getString(ARGS_NAME) }
@@ -134,6 +143,30 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
             destination = mapboxMap?.locationComponent?.lastKnownLocation
             stopRecording.visibility = View.GONE
             saveRoute.visibility = View.VISIBLE
+            println("stop : "+locationEngine)
+
+            // Mostrar dialogo
+            val dialogView = layoutInflater.inflate(R.layout.save_route_dialog, null)
+            val dialog = AlertDialog.Builder(stopRecording.context).setView(dialogView).setTitle("Guardar Ruta")
+
+            val alertDialog = dialog.show()
+
+            dialogView.dialogSaveButton.setOnClickListener{
+                println("guardar : "+locationEngine)
+                alertDialog.dismiss()
+                name = dialogView.dialogSaveName.text.toString()
+                comments = dialogView.dialogSaveComment.text.toString()
+                level = dialogView.dialogSaveLevel.text.toString()
+                
+                saveRoute()
+
+            }
+
+            dialogView.dialogCancelButton.setOnClickListener{
+                alertDialog.dismiss()
+            }
+
+
         }
 
         saveRoute.setOnClickListener {
@@ -160,8 +193,29 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
             )
             routeCoordinates.clear()
         }
+
     }
 
+    private fun saveRoute(){
+        //TODO: Save on firebase route
+        var route = HashMap<String, String>()
+        val routeJson = Gson().toJson(routeCoordinates)
+        route.put(email.toString(), routeJson )
+        db.collection("routes").add(hashMapOf("average_duration" to (destination?.time?.minus(
+            origin?.time!!
+        )),
+            "comments" to comments,
+            "created_by" to email.toString(),
+            "destination" to destination,
+            "route" to routeJson,
+            "level" to level,
+            "name" to name,
+            "origin" to origin,
+            "security_level" to securityLevel,
+            "total_visits" to ""
+        ))
+
+    }
 
     @SuppressLint("MissingPermission")
     private fun initLocationEngine() {
@@ -353,6 +407,24 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
             Log.d("Location Change ", exception.localizedMessage)
         }
 
+    }
+
+    fun onCreateDialog(savedInstanceState: Bundle): Dialog {
+        return activity?.let {
+            // Use the Builder class for convenient dialog construction
+            val builder = AlertDialog.Builder(it)
+            builder.setMessage("R.string.dialog_fire_missiles")
+                .setPositiveButton("R.string.fire",
+                    DialogInterface.OnClickListener { dialog, id ->
+                        // FIRE ZE MISSILES!
+                    })
+                .setNegativeButton("R.string.cancel",
+                    DialogInterface.OnClickListener { dialog, id ->
+                        // User cancelled the dialog
+                    })
+            // Create the AlertDialog object and return it
+            builder.create()
+        } ?: throw IllegalStateException("Activity cannot be null")
     }
 
 }
