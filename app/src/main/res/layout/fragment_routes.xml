@@ -54,7 +54,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
         android:background="@color/colorPrimary"
-        android:text="Guardar"
+        android:text="@string/save_route"
         android:textColor="@android:color/white"
         android:visibility="gone"
         mapbox:layout_constraintBottom_toBottomOf="parent"
