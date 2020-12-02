@@ -12,7 +12,6 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import co.edu.unal.biketrainer.ProfileFragment
 import co.edu.unal.biketrainer.R
 import co.edu.unal.biketrainer.utils.Utils
 import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT
@@ -22,7 +21,10 @@ import com.google.gson.Gson
 import com.mapbox.android.core.location.*
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
-import com.mapbox.geojson.*
+import com.mapbox.geojson.Feature
+import com.mapbox.geojson.FeatureCollection
+import com.mapbox.geojson.LineString
+import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
@@ -38,9 +40,12 @@ import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.ui.map.NavigationMapboxMap
-import kotlinx.android.synthetic.main.fragment_profile.*
 import kotlinx.android.synthetic.main.fragment_routes.*
 import java.lang.ref.WeakReference
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
 
@@ -72,7 +77,7 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
     private var level: String? = null
     private var name: String? = null
     private var origin: Location? = null
-    private var securityLevel: Location? = null
+    private var securityLevel: Integer? = null
 
     private val db = FirebaseFirestore.getInstance()
     private val email by lazy { arguments?.getString(ARGS_NAME) }
@@ -112,8 +117,8 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
     @SuppressLint("MissingPermission")
     private fun initListeners() {
         startRecording.setOnClickListener {
-            mapboxNavigation?.let {
-                initLocationEngine();
+            mapboxNavigation.let {
+                initLocationEngine()
                 it.startTripSession()
             }
             origin = mapboxMap?.locationComponent?.lastKnownLocation
@@ -124,7 +129,7 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
         stopRecording.setOnClickListener {
 
             if (locationEngine != null) {
-                locationEngine.removeLocationUpdates(callback);
+                locationEngine.removeLocationUpdates(callback)
             }
             destination = mapboxMap?.locationComponent?.lastKnownLocation
             stopRecording.visibility = View.GONE
@@ -135,20 +140,24 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
             //TODO: Save on firebase route
             var route = HashMap<String, String>()
             val routeJson = Gson().toJson(routeCoordinates)
-            route.put(email.toString(), routeJson )
-            db.collection("routes").add(hashMapOf("average_duration" to (destination?.time?.minus(
-                origin?.time!!
-            )),
-                "comments" to comments,
-                "created_by" to email.toString(),
-                "destination" to destination,
-                "route" to routeJson,
-                "level" to level,
-                "name" to name,
-                "origin" to origin,
-                "security_level" to securityLevel,
-                "total_visits" to ""
-                ))
+            var duration = Calendar.getInstance()
+            duration.timeInMillis = destination?.time!!.minus(origin?.time!!)
+            route.put(email.toString(), routeJson)
+            db.collection("routes").add(
+                hashMapOf(
+                    "average_duration" to SimpleDateFormat("HH:mm:ss").format(duration.time),
+                    "comments" to comments,
+                    "created_by" to email.toString(),
+                    "created_at" to com.google.firebase.Timestamp.now(),
+                    "destination" to destination,
+                    "route" to routeJson,
+                    "level" to level,
+                    "name" to name,
+                    "origin" to origin,
+                    "security_level" to securityLevel,
+                    "total_visits" to ""
+                )
+            )
             routeCoordinates.clear()
         }
     }
@@ -168,11 +177,11 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
 
     override fun onMapReady(mapboxMap: MapboxMap) {
         mapboxMap.setStyle(Style.LIGHT, Style.OnStyleLoaded {
-            this.mapboxMap = mapboxMap;
+            this.mapboxMap = mapboxMap
             enableLocationComponent(it)
         })
 
-        routeCoordinates = ArrayList<Point>();
+        routeCoordinates = ArrayList<Point>()
     }
 
     @SuppressLint("MissingPermission")
@@ -245,7 +254,7 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
     override fun onDestroy() {
         super.onDestroy()
         if (locationEngine != null) {
-            locationEngine.removeLocationUpdates(callback);
+            locationEngine.removeLocationUpdates(callback)
         }
         map_view?.onDestroy()
     }
@@ -298,14 +307,14 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
                 }
                 //TODO: Save location
                 if(activity.mapboxMap != null && result.lastLocation != null) {
-                    val map = activity?.mapboxMap
+                    val map = activity.mapboxMap
                     map!!.animateCamera(
                         CameraUpdateFactory.newCameraPosition(
                             CameraPosition.Builder()
                                 .target(
                                     LatLng(
-                                        result.lastLocation!!.latitude!!,
-                                        result.lastLocation!!.longitude!!
+                                        result.lastLocation!!.latitude,
+                                        result.lastLocation!!.longitude
                                     )
                                 )
                                 .zoom(15.0)
@@ -334,7 +343,7 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
                             )
                         )
                     })
-                    map?.locationComponent?.forceLocationUpdate(location)
+                    map.locationComponent.forceLocationUpdate(location)
                 }
             }
 
