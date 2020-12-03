@@ -7,19 +7,30 @@
         android:id="@+id/back_to_main"
         android:icon="@drawable/ic_baseline_arrow_back_ios_24"
         android:title="@string/go_back" />
-
     <item
         android:id="@+id/routes_record"
-        android:icon="@drawable/mapbox_ic_route_origin"
+        android:icon="@drawable/ic_baseline_fiber_manual_record_24"
         android:title="@string/menu_routes_record" />
     <item
+        android:id="@+id/my_routes_list"
+        android:icon="@drawable/ic_baseline_map_24"
+        android:title="@string/menu_my_routes_list" />
+    <item
+        android:id="@+id/near_routes"
+        android:icon="@drawable/ic_baseline_near_me_24"
+        android:title="@string/menu_near_routes" />
+    <item
+        android:id="@+id/top_routes"
+        android:icon="@drawable/ic_baseline_stars_24"
+        android:title="@string/menu_top_routes" />
+    <item
+        android:id="@+id/recommended_routes"
+        android:icon="@drawable/ic_baseline_emoji_flags_24"
+        android:title="@string/menu_recommended_routes" />
+    <item
         android:id="@+id/routes_list"
-        android:icon="@drawable/mapbox_ic_route_preview_dark"
+        android:icon="@drawable/ic_baseline_travel_explore_24"
         android:title="@string/menu_routes_list" />
 
-    <item
-        android:id="@+id/my_routes_list"
-        android:icon="@drawable/mapbox_ic_route_preview_dark"
-        android:title="@string/menu_my_routes_list" />
 
 </menu>

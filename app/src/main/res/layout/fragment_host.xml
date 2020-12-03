@@ -3,11 +3,4 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.routes.list.RoutesListFragment">
-
-    <ListView
-        android:id="@+id/routes"
-        android:layout_width="match_parent"
-        android:layout_height="742dp" />
-
-</FrameLayout>
+    tools:context=".ui.HostFragment"></FrameLayout>

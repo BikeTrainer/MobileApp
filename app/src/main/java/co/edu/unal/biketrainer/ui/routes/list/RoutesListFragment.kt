@@ -53,6 +53,7 @@ class RoutesListFragment : Fragment(), AdapterView.OnItemClickListener {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(RoutesListViewModel::class.java)
         chargeList()
+
         routes.onItemClickListener = this
     }
 
@@ -61,14 +62,25 @@ class RoutesListFragment : Fragment(), AdapterView.OnItemClickListener {
         var collection: Query
 
         when (type) {
-            this.requireContext().getString(R.string.menu_routes_recommended_list) -> {
+            this.requireContext().getString(R.string.menu_recommended_routes) -> {
                 collection = db.collection("routes").whereEqualTo("level", user?.level)
+                    .orderBy("created_at", Query.Direction.DESCENDING)
             }
             this.requireContext().getString(R.string.menu_my_routes_list) -> {
                 collection = db.collection("routes").whereEqualTo("created_by", user?.id)
+                    .orderBy("created_at", Query.Direction.DESCENDING)
+            }
+            this.requireContext().getString(R.string.menu_near_routes) -> {
+                collection =
+                    db.collection("routes").orderBy("created_at", Query.Direction.DESCENDING)
+            }
+            this.requireContext().getString(R.string.menu_top_routes) -> {
+                collection =
+                    db.collection("routes").orderBy("created_at", Query.Direction.DESCENDING)
             }
             else -> {
-                collection = db.collection("routes")
+                collection =
+                    db.collection("routes").orderBy("created_at", Query.Direction.DESCENDING)
             }
 
         }

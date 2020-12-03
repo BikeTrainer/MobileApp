@@ -15,6 +15,8 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import co.edu.unal.biketrainer.model.User
 import co.edu.unal.biketrainer.ui.gallery.GalleryFragment
+import co.edu.unal.biketrainer.ui.home.HomeFragment
+import co.edu.unal.biketrainer.ui.profile.ProfileFragment
 import co.edu.unal.biketrainer.ui.routes.RoutesFragment
 import co.edu.unal.biketrainer.ui.routes.list.RoutesListFragment
 import co.edu.unal.biketrainer.ui.slideshow.SlideshowFragment
@@ -64,11 +66,13 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow, R.id.nav_profile
+                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow, R.id.nav_profile, R.id.nav_host
             ), drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration) // Menu hamburguesa
         navView.setupWithNavController(navController)
+
+        navController.setGraph(R.navigation.mobile_navigation, intent.extras)
 
         //setup
         val bundle = intent.extras
@@ -86,13 +90,6 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         prefs.putString("provider", provider)
         prefs.apply()
 
-        val fragment = RoutesListFragment.newInstance(
-            user,
-            this.getString(R.string.menu_routes_recommended_list)
-        )
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.nav_host_fragment, fragment).commit()
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -107,8 +104,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
 
-
-    private fun setup(email: String, provider:String){
+    private fun setup(email: String, provider: String) {
         title = "Inicio"
 
         // Mostrar datos en el menu drawable
@@ -124,11 +120,16 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             this.user!!.phone = it.get("phone") as String?
             this.user!!.level = it.get("level") as String?
         }
+
+        val fragment = RoutesFragment.newInstance(user)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.nav_host_fragment, fragment).commit()
     }
 
-    private fun logOut(provider: String){
+    private fun logOut(provider: String) {
         // Borrar datos sesion
-        val prefs = getSharedPreferences(getString(R.string.prefs_file),Context.MODE_PRIVATE).edit()
+        val prefs =
+            getSharedPreferences(getString(R.string.prefs_file), Context.MODE_PRIVATE).edit()
         prefs.clear()
         prefs.apply()
 
@@ -147,10 +148,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when (item.itemId) {
             R.id.nav_home -> {
                 println("opcion home")
-                val fragment = RoutesListFragment.newInstance(
-                    user,
-                    this.getString(R.string.menu_routes_recommended_list)
-                )
+                val fragment = HomeFragment.newInstance(user)
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.nav_host_fragment, fragment).commit()
             }
@@ -201,13 +199,38 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.nav_host_fragment, fragment).commit()
             }
+            R.id.near_routes -> {
+                val fragment = RoutesListFragment.newInstance(
+                    user,
+                    this.getString(R.string.menu_near_routes)
+                )
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.nav_host_fragment, fragment).commit()
+            }
+            R.id.recommended_routes -> {
+                val fragment = RoutesListFragment.newInstance(
+                    user,
+                    this.getString(R.string.menu_recommended_routes)
+                )
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.nav_host_fragment, fragment).commit()
+            }
+            R.id.top_routes -> {
+                val fragment = RoutesListFragment.newInstance(
+                    user,
+                    this.getString(R.string.menu_top_routes)
+                )
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.nav_host_fragment, fragment).commit()
+            }
             R.id.nav_logout -> {
                 // Cerrar sesion
                 println("opcion logout")
                 logOut(provider.toString())
             }
+            else ->
+                return false
         }
         return true
     }
-
 }

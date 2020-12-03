@@ -247,7 +247,7 @@ class RoutesFragment : Fragment(), OnMapReadyCallback, PermissionsListener,
                     .build()
 
                 mapboxMap.animateCamera(
-                    CameraUpdateFactory.newLatLngBounds(latLngBounds, 15, 15, 15, 15)
+                    CameraUpdateFactory.newLatLngBounds(latLngBounds, 200, 200, 200, 200)
 
                 )
 

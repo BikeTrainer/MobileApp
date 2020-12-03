@@ -35,17 +35,21 @@
     <string name="save_route">SAVE</string>
     <string name="menu_routes_record">Nueva Ruta</string>
     <string name="menu_routes_list">Rutas Disponibles</string>
-    <string name="menu_routes_recommended_list">Rutas Recomendadas</string>
     <string name="go_back">Volver</string>
     <string name="menu_my_routes_list">Mis Rutas</string>
     <string name="name_label_item">Ruta: </string>
     <string name="level_label_item">Dificultad: </string>
     <string name="security_label_item">Seguridad: </string>
+    <string name="recommended_routes">Rutas Recomendadas</string>
+    <string name="bike_trainer">Bogotá Bike Trainer</string>
+    <string name="menu_near_routes">Rutas Cercanas</string>
+    <string name="menu_top_routes">Mejor Valoradas</string>
+    <string name="menu_recommended_routes">Recomendadas para ti</string>
 
     <string-array name="levels">
-        <item>Facil</item>
+        <item>Principiante</item>
         <item>Intermedio</item>
-        <item>Dificil</item>
+        <item>Avanzado</item>
         <item>Experto</item>
     </string-array>
 

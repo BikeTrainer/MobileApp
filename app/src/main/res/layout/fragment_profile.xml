@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBackgroung"
-    tools:context=".ProfileFragment">
+    tools:context=".ui.profile.ProfileFragment">
 
     <!-- TODO: Update blank fragment layout -->
 

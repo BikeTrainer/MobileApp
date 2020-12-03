@@ -1,28 +1,16 @@
-package co.edu.unal.biketrainer
+package co.edu.unal.biketrainer.ui.profile
 
-import android.app.FragmentManager
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.fragment.app.Fragment
+import co.edu.unal.biketrainer.R
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_profile.*
-import kotlinx.android.synthetic.main.fragment_profile.view.*
-import kotlinx.android.synthetic.main.nav_header_main.*
-
-import co.edu.unal.biketrainer.ui.home.HomeFragment
-import kotlinx.android.synthetic.*
-import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.android.synthetic.main.fragment_gallery.*
-import kotlinx.coroutines.awaitAll
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
