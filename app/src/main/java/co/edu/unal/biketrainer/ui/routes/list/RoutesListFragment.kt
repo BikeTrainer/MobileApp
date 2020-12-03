@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import co.edu.unal.biketrainer.R
 import co.edu.unal.biketrainer.model.Route
+import co.edu.unal.biketrainer.model.User
 import co.edu.unal.biketrainer.ui.routes.RoutesFragment
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
@@ -20,18 +21,17 @@ import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import kotlinx.android.synthetic.main.fragment_routes_list.*
+import java.text.SimpleDateFormat
 
 class RoutesListFragment : Fragment(), AdapterView.OnItemClickListener {
 
     companion object {
-        const val ARGS_NAME = "email"
-        var myRoutes = false
-        fun newInstance(name: String, myRoutes: Boolean): Fragment {
-            val args = Bundle()
-            args.putString(ARGS_NAME, name)
+        private var user: User? = null
+        private var type: String? = null
+        fun newInstance(user: User?, type: String?): Fragment {
             val fragment = RoutesListFragment()
-            fragment.arguments = args
-            this.myRoutes = myRoutes
+            this.user = user
+            this.type = type
             return fragment
         }
     }
@@ -40,7 +40,7 @@ class RoutesListFragment : Fragment(), AdapterView.OnItemClickListener {
     private val db = FirebaseFirestore.getInstance()
     private var items = ArrayList<Route>()
 
-    private val email by lazy { arguments?.getString(RoutesFragment.ARGS_NAME) }
+    private val email by lazy { user?.id.toString() }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -60,10 +60,17 @@ class RoutesListFragment : Fragment(), AdapterView.OnItemClickListener {
     private fun chargeList() {
         var collection: Query
 
-        if (myRoutes) {
-            collection = db.collection("routes").whereEqualTo("created_by", email)
-        } else {
-            collection = db.collection("routes")
+        when (type) {
+            this.requireContext().getString(R.string.menu_routes_recommended_list) -> {
+                collection = db.collection("routes").whereEqualTo("level", user?.level)
+            }
+            this.requireContext().getString(R.string.menu_my_routes_list) -> {
+                collection = db.collection("routes").whereEqualTo("created_by", user?.id)
+            }
+            else -> {
+                collection = db.collection("routes")
+            }
+
         }
 
         collection.get()
@@ -141,10 +148,10 @@ class RoutesListFragment : Fragment(), AdapterView.OnItemClickListener {
 
 
     override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        var fragment = RoutesFragment.newInstance(email.toString(), items[position])
+        var fragment = RoutesFragment.newInstance(user, items[position])
         this.activity?.supportFragmentManager?.beginTransaction()
             ?.replace(R.id.nav_host_fragment, fragment)?.commit()
-        Toast.makeText(this.requireContext(), items[position].toString(), Toast.LENGTH_SHORT)
+        Toast.makeText(this.requireContext(), items[position].name.toString(), Toast.LENGTH_SHORT)
             .show()
     }
 
@@ -174,18 +181,24 @@ class RoutesListFragment : Fragment(), AdapterView.OnItemClickListener {
             var view = vi.inflate(R.layout.list_item_route, parent, false)
 
             val name = view.findViewById<TextView>(R.id.tv_name)
-            val security = view.findViewById<TextView>(R.id.tv_security)
+            val security = view.findViewById<RatingBar>(R.id.tv_security)
             val level = view.findViewById<TextView>(R.id.tv_level)
+            val duration = view.findViewById<TextView>(R.id.tv_duration)
+            val owner = view.findViewById<TextView>(R.id.tv_owner)
+            val distance = view.findViewById<TextView>(R.id.tv_distance)
 
             val deleteButton = view.findViewById<ImageView>(R.id.delete)
 
             val route = getItem(position) as Route
 
-            name.text = route.name
-            security.text = route.security.toString()
+            name.text = route.name?.capitalize()
+            security.rating = if (route.security != null) route.security!! else 0f
             level.text = route.level
+            owner.text = route.created_by
+            duration.text = SimpleDateFormat("HH:mm:ss").format(route.average_duration!!)
+            distance.text = "%.2f km".format(route.origin?.distanceTo(route.destination)?.div(1000))
 
-            if (!myRoutes) {
+            if (routesListFragment.email != route.created_by) {
                 deleteButton.visibility = View.INVISIBLE
             }
 
@@ -196,6 +209,7 @@ class RoutesListFragment : Fragment(), AdapterView.OnItemClickListener {
                     .setPositiveButton("Yes") { dialog, id ->
                         routesListFragment.db.collection("routes")
                             .document(this.objects[position].id!!).delete()
+                        routesListFragment.items.clear()
                         var ft =
                             routesListFragment.activity?.supportFragmentManager?.beginTransaction()
                         ft?.detach(routesListFragment)

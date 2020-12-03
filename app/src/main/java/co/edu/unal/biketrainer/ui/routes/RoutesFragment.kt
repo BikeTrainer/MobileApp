@@ -2,8 +2,6 @@ package co.edu.unal.biketrainer.ui.routes
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.app.Dialog
-import android.content.DialogInterface
 import android.location.Location
 import android.os.Bundle
 import android.os.Looper
@@ -16,11 +14,12 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import co.edu.unal.biketrainer.R
 import co.edu.unal.biketrainer.R.*
 import co.edu.unal.biketrainer.model.Route
+import co.edu.unal.biketrainer.model.User
+import co.edu.unal.biketrainer.ui.routes.list.RoutesListFragment
 import co.edu.unal.biketrainer.utils.Utils
-import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT
-import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.mapbox.android.core.location.*
@@ -30,11 +29,14 @@ import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.LineString
 import com.mapbox.geojson.Point
+import com.mapbox.mapboxsdk.annotations.MarkerOptions
 import com.mapbox.mapboxsdk.camera.CameraPosition
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
+import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.LocationComponentOptions
+import com.mapbox.mapboxsdk.location.OnLocationCameraTransitionListener
 import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapboxMap
@@ -44,32 +46,30 @@ import com.mapbox.mapboxsdk.style.layers.LineLayer
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.navigation.core.MapboxNavigation
-import kotlinx.android.synthetic.main.fragment_profile.*
 import kotlinx.android.synthetic.main.fragment_routes.*
-import kotlinx.android.synthetic.main.save_route_dialog.*
 import kotlinx.android.synthetic.main.save_route_dialog.view.*
 import java.lang.ref.WeakReference
 
-class RoutesFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
+
+class RoutesFragment : Fragment(), OnMapReadyCallback, PermissionsListener,
+    OnLocationCameraTransitionListener {
 
 
     companion object {
         private const val DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L
         private const val DEFAULT_MAX_WAIT_TIME: Long = DEFAULT_INTERVAL_IN_MILLISECONDS * 5
-        const val ARGS_NAME = "email"
+        private var user: User? = null
         private var staticRoute: Route? = null
 
-        fun newInstance(name: String): Fragment {
-            val args = Bundle()
-            args.putString(ARGS_NAME, name)
+        fun newInstance(user: User?): Fragment {
             val fragment = RoutesFragment()
-            fragment.arguments = args
+            this.user = user
             return fragment
         }
 
-        fun newInstance(name: String, route: Route): Fragment {
+        fun newInstance(user: User?, route: Route): Fragment {
             staticRoute = route
-            return newInstance(name)
+            return newInstance(user)
         }
     }
 
@@ -90,7 +90,7 @@ class RoutesFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
 
 
     private val db = FirebaseFirestore.getInstance()
-    private val email by lazy { arguments?.getString(ARGS_NAME) }
+    private val email by lazy { user?.id.toString() }
 
     private val callback: RoutesFragmentLocationCallback =
         RoutesFragmentLocationCallback(this, false)
@@ -110,18 +110,18 @@ class RoutesFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
         map_view.onCreate(savedInstanceState)
 
         map_view.getMapAsync(this)
-        val mapboxNavigationOptions = MapboxNavigation
-            .defaultNavigationOptionsBuilder(
-                requireContext(), Utils.getMapboxAccessToken(
-                    requireContext()
-                )
-            )
-            .build()
 
-        mapboxNavigation = MapboxNavigation(mapboxNavigationOptions)
+        val mapboxNavigationOptions = this.context?.let {
+            MapboxNavigation
+                .defaultNavigationOptionsBuilder(
+                    it,
+                    Utils.getMapboxAccessToken(this.requireContext())
+                )
+                .build()
+        }
+        mapboxNavigation = mapboxNavigationOptions?.let { MapboxNavigation(it) }!!
         startRecording.visibility = View.VISIBLE
         initListeners()
-        Snackbar.make(container, string.msg_long_press_map_to_place_waypoint, LENGTH_SHORT).show()
     }
 
     @SuppressLint("MissingPermission")
@@ -133,6 +133,7 @@ class RoutesFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
                 it.startTripSession()
             }
             origin = mapboxMap?.locationComponent?.lastKnownLocation
+            mapboxMap?.locationComponent?.setCameraMode(CameraMode.TRACKING_GPS_NORTH, this)
             startRecording.visibility = View.GONE
             stopRecording.visibility = View.VISIBLE
         }
@@ -144,7 +145,6 @@ class RoutesFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
             }
             destination = mapboxMap?.locationComponent?.lastKnownLocation
             stopRecording.visibility = View.GONE
-            saveRoute.visibility = View.VISIBLE
             println("stop : " + locationEngine)
 
             // Mostrar dialogo
@@ -157,7 +157,7 @@ class RoutesFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
             dialogView.dialogSaveButton.setOnClickListener {
                 println("guardar : " + locationEngine)
                 alertDialog.dismiss()
-                name = dialogView.dialogSaveName.text.toString()
+                name = dialogView.dialogSaveName.text.toString().capitalize()
                 comments = dialogView.dialogSaveComment.text.toString()
 
                 saveRoute()
@@ -204,6 +204,11 @@ class RoutesFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
         )
         routeCoordinates.clear()
 
+        var fragment =
+            RoutesListFragment.newInstance(user, this.getString(R.string.menu_my_routes_list))
+        this.activity?.supportFragmentManager?.beginTransaction()
+            ?.replace(R.id.nav_host_fragment, fragment)?.commit()
+
     }
 
     @SuppressLint("MissingPermission")
@@ -223,9 +228,47 @@ class RoutesFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
         mapboxMap.setStyle(Style.LIGHT, Style.OnStyleLoaded {
             this.mapboxMap = mapboxMap
             enableLocationComponent(it)
-            initLocationEngine()
 
             if (staticRoute != null) {
+
+                val latLngBounds = LatLngBounds.Builder()
+                    .include(
+                        LatLng(
+                            staticRoute!!.origin!!.latitude,
+                            staticRoute!!.origin!!.longitude
+                        )
+                    )
+                    .include(
+                        LatLng(
+                            staticRoute!!.destination!!.latitude,
+                            staticRoute!!.destination!!.longitude
+                        )
+                    )
+                    .build()
+
+                mapboxMap.animateCamera(
+                    CameraUpdateFactory.newLatLngBounds(latLngBounds, 15, 15, 15, 15)
+
+                )
+
+                mapboxMap.addMarker(
+                    MarkerOptions().position(
+                        LatLng(
+                            staticRoute!!.origin!!.latitude,
+                            staticRoute!!.origin!!.longitude
+                        )
+                    ).title("Origen: " + staticRoute!!.name)
+                )
+
+                mapboxMap.addMarker(
+                    MarkerOptions().position(
+                        LatLng(
+                            staticRoute!!.destination!!.latitude,
+                            staticRoute!!.destination!!.longitude
+                        )
+                    ).title("Destino: " + staticRoute!!.name)
+                )
+
                 it.addSource(
                     GeoJsonSource(
                         "line-source",
@@ -249,6 +292,8 @@ class RoutesFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
                         PropertyFactory.lineColor(color.colorBikeTrainer)
                     )
                 )
+            } else {
+                initLocationEngine()
             }
         })
 
@@ -283,6 +328,7 @@ class RoutesFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
             permissionsManager.requestLocationPermissions(this.activity)
         }
     }
+
 
     override fun onStart() {
         super.onStart()
@@ -434,22 +480,30 @@ class RoutesFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
 
     }
 
-    fun onCreateDialog(savedInstanceState: Bundle): Dialog {
-        return activity?.let {
-            // Use the Builder class for convenient dialog construction
-            val builder = AlertDialog.Builder(it)
-            builder.setMessage("R.string.dialog_fire_missiles")
-                .setPositiveButton("R.string.fire",
-                    DialogInterface.OnClickListener { dialog, id ->
-                        // FIRE ZE MISSILES!
-                    })
-                .setNegativeButton("R.string.cancel",
-                    DialogInterface.OnClickListener { dialog, id ->
-                        // User cancelled the dialog
-                    })
-            // Create the AlertDialog object and return it
-            builder.create()
-        } ?: throw IllegalStateException("Activity cannot be null")
+    override fun onLocationCameraTransitionFinished(cameraMode: Int) {
+        if (cameraMode != CameraMode.NONE) {
+            mapboxMap?.locationComponent?.zoomWhileTracking(
+                15.0,
+                750,
+                object : MapboxMap.CancelableCallback {
+                    override fun onCancel() {
+                        TODO("Not yet implemented")
+                    }
+
+                    override fun onFinish() {
+                        mapboxMap?.locationComponent?.tiltWhileTracking(45.0)
+                    }
+
+                })
+        } else {
+            mapboxMap?.easeCamera(CameraUpdateFactory.tiltTo(0.0))
+        }
+    }
+
+    override fun onLocationCameraTransitionCanceled(cameraMode: Int) {
+        mapboxMap?.locationComponent?.apply {
+            this.tiltWhileTracking(45.0)
+        }
     }
 
 }

@@ -13,8 +13,8 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import co.edu.unal.biketrainer.model.User
 import co.edu.unal.biketrainer.ui.gallery.GalleryFragment
-import co.edu.unal.biketrainer.ui.home.HomeFragment
 import co.edu.unal.biketrainer.ui.routes.RoutesFragment
 import co.edu.unal.biketrainer.ui.routes.list.RoutesListFragment
 import co.edu.unal.biketrainer.ui.slideshow.SlideshowFragment
@@ -39,6 +39,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var email: String
     private lateinit var provider: String
     private val db = FirebaseFirestore.getInstance()
+    private var user: User? = null
 
     private lateinit var appBarConfiguration: AppBarConfiguration
 
@@ -85,6 +86,13 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         prefs.putString("provider", provider)
         prefs.apply()
 
+        val fragment = RoutesListFragment.newInstance(
+            user,
+            this.getString(R.string.menu_routes_recommended_list)
+        )
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.nav_host_fragment, fragment).commit()
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -108,6 +116,13 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             nameMenuTextView.text = it.get("name") as String? + " " + it.get("lastname") as String?
             providerMenuTextView.text = provider
             emailMenuTextView.text = email
+
+            this.user = User()
+            this.user!!.id = it.id
+            this.user!!.name = it.get("name") as String?
+            this.user!!.lastname = it.get("lastname") as String?
+            this.user!!.phone = it.get("phone") as String?
+            this.user!!.level = it.get("level") as String?
         }
     }
 
@@ -132,7 +147,10 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when (item.itemId) {
             R.id.nav_home -> {
                 println("opcion home")
-                val fragment = HomeFragment()
+                val fragment = RoutesListFragment.newInstance(
+                    user,
+                    this.getString(R.string.menu_routes_recommended_list)
+                )
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.nav_host_fragment, fragment).commit()
             }
@@ -165,17 +183,21 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 nav_view.inflateMenu(R.menu.activity_main_drawer)
             }
             R.id.routes_record -> {
-                val fragment = RoutesFragment.newInstance(email.toString())
+                val fragment = RoutesFragment.newInstance(user)
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.nav_host_fragment, fragment).commit()
             }
             R.id.routes_list -> {
-                val fragment = RoutesListFragment.newInstance(email.toString(), false)
+                val fragment =
+                    RoutesListFragment.newInstance(user, this.getString(R.string.menu_routes_list))
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.nav_host_fragment, fragment).commit()
             }
             R.id.my_routes_list -> {
-                val fragment = RoutesListFragment.newInstance(email.toString(), true)
+                val fragment = RoutesListFragment.newInstance(
+                    user,
+                    this.getString(R.string.menu_my_routes_list)
+                )
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.nav_host_fragment, fragment).commit()
             }

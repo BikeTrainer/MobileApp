@@ -5,41 +5,99 @@
     android:minHeight="?attr/listPreferredItemHeight"
     android:orientation="vertical"
     android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingTop="8dp"
+    android:padding="17dp"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingBottom="8dp">
+
+    <TextView
+        android:id="@+id/name_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="@string/name_label_item"
+        android:textAppearance="?attr/textAppearanceListItem" />
 
     <TextView
         android:id="@+id/tv_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="56dp"
+        android:layout_marginStart="35dp"
+        android:layout_toEndOf="@+id/name_label"
         android:textAppearance="?attr/textAppearanceListItem" />
+
+    <TextView
+        android:id="@+id/level_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/name_label"
+        android:text="@string/level_label_item"
+        android:layout_below="@+id/tv_name"
+        android:textAppearance="?attr/textAppearanceListItemSecondary" />
 
     <TextView
         android:id="@+id/tv_level"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/tv_name"
-        android:layout_alignLeft="@+id/tv_name" />
+        android:layout_alignStart="@id/tv_name"
+        android:layout_alignTop="@id/level_label"
+        android:textAppearance="?attr/textAppearanceListItemSecondary" />
 
     <TextView
-        android:id="@+id/tv_security"
+        android:id="@+id/security_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/name_label"
+        android:text="@string/security_label_item"
         android:layout_below="@+id/tv_level"
-        android:layout_alignLeft="@+id/tv_name" />
+        android:textAppearance="?attr/textAppearanceListItemSecondary" />
+
+    <RatingBar
+        android:id="@+id/tv_security"
+        style="?android:attr/ratingBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@id/tv_name"
+        android:layout_alignBottom="@id/security_label"
+        android:layout_gravity="center_horizontal"
+        android:layout_toEndOf="@id/security_label"
+        android:numStars="5" />
+
+    <TextView
+        android:id="@+id/tv_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_alignTop="@id/name_label"
+        android:layout_toLeftOf="@id/delete" />
+
+    <TextView
+        android:id="@+id/tv_distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignWithParentIfMissing="true"
+        android:layout_below="@id/tv_duration"
+        android:layout_alignTop="@id/level_label"
+        android:layout_toLeftOf="@id/delete" />
 
     <ImageView
         android:id="@+id/delete"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_margin="12dp"
         android:layout_marginLeft="12dp"
         android:layout_marginTop="12dp"
         android:layout_marginRight="12dp"
         android:src="@drawable/ic_baseline_delete_sweep_24" />
+
+    <TextView
+        android:id="@+id/tv_owner"
+        style="?attr/textAppearanceOverline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/delete"
+        android:layout_alignParentEnd="true"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
 
 </RelativeLayout>
