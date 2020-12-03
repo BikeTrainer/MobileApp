@@ -20,12 +20,19 @@
         android:layout_height="wrap_content"
         android:inputType="textPersonName" />
 
-    <EditText
-        android:id="@+id/dialogSaveLevel"
-        android:hint="Nivel"
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textPersonName" />
+        android:textSize="18dp"
+        android:text="Nivel"
+        android:textAlignment="center"
+        android:layout_margin="8dp"/>
+
+    <Spinner
+        android:id="@+id/spinnerSaveRoute"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:entries="@array/levels"/>
 
 
     <TextView

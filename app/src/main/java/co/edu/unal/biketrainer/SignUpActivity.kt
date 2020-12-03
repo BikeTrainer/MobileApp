@@ -3,6 +3,8 @@ package co.edu.unal.biketrainer
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import androidx.appcompat.app.AlertDialog
@@ -10,10 +12,13 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_auth.*
 import kotlinx.android.synthetic.main.activity_sign_up.*
+import kotlinx.android.synthetic.main.fragment_profile.*
 
 class SignUpActivity : AppCompatActivity() {
 
     private val db = FirebaseFirestore.getInstance()
+
+    lateinit var level : String
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -31,6 +36,17 @@ class SignUpActivity : AppCompatActivity() {
         title="Registrate"
         
         signUpEmailEditText.setText(email)
+
+        signUpLevelSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                level = p0?.getItemAtPosition(p2).toString()
+                println(level)
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+                TODO("Not yet implemented")
+            }
+        }
 
         signUpSaveButton.setOnClickListener {
 
@@ -63,7 +79,8 @@ class SignUpActivity : AppCompatActivity() {
             hashMapOf("name" to signUpNameEditText.text.toString(),
                 "lastname" to signUpLastnameEditText.text.toString(),
                 "phone" to signUpPhoneEditText.text.toString(),
-                "date" to signUpDateEditText.text.toString())
+                "date" to signUpDateEditText.text.toString(),
+                "level" to level)
         )
     }
 

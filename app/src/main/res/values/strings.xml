@@ -8,7 +8,7 @@
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
 
-    <string name="menu_home">Home</string>
+    <string name="menu_home">BikeTrainer</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
     <string name="menu_profile">Perfil</string>
@@ -37,5 +37,12 @@
     <string name="menu_routes_list">Rutas Disponibles</string>
     <string name="go_back">Volver</string>
     <string name="menu_my_routes_list">Mis Rutas</string>
+
+    <string-array name="levels">
+        <item>Facil</item>
+        <item>Intermedio</item>
+        <item>Dificil</item>
+        <item>Experto</item>
+    </string-array>
 
 </resources>

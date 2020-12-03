@@ -9,6 +9,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import android.widget.Toast
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_profile.*
@@ -16,8 +19,10 @@ import kotlinx.android.synthetic.main.fragment_profile.view.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 
 import co.edu.unal.biketrainer.ui.home.HomeFragment
+import kotlinx.android.synthetic.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.fragment_gallery.*
+import kotlinx.coroutines.awaitAll
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -37,6 +42,9 @@ class ProfileFragment : Fragment() {
 
     private val db = FirebaseFirestore.getInstance()
     private val email by lazy { arguments?.getString(ARGS_NAME) }
+
+    lateinit var option: Spinner
+    lateinit var level : String
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,6 +70,10 @@ class ProfileFragment : Fragment() {
         val email:String by lazy { arguments?.getString("email").toString() }
         println("llego al perfil"+email)
 
+        val options:MutableList<String> = arrayListOf("Facil","Intermedio","Dificil")
+
+
+
 
         //Buscar datos
         db.collection("users").document(email).get().addOnSuccessListener {
@@ -77,8 +89,21 @@ class ProfileFragment : Fragment() {
                     hashMapOf("name" to profileNameEditText.text.toString(),
                         "lastname" to profileLastnameEditText.text.toString(),
                         "phone" to profilePhoneEditText.text.toString(),
-                        "date" to profileDateEditText.text.toString())
+                        "date" to profileDateEditText.text.toString(),
+                        "level" to level)
                 )
+            }
+
+            profileLevelSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                    level = p0?.getItemAtPosition(p2).toString()
+                    println(level)
+
+                }
+
+                override fun onNothingSelected(p0: AdapterView<*>?) {
+                    TODO("Not yet implemented")
+                }
             }
         }
 

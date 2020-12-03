@@ -11,7 +11,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.SeekBar
+import android.widget.AdapterView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -44,7 +44,9 @@ import com.mapbox.mapboxsdk.style.layers.LineLayer
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.navigation.core.MapboxNavigation
+import kotlinx.android.synthetic.main.fragment_profile.*
 import kotlinx.android.synthetic.main.fragment_routes.*
+import kotlinx.android.synthetic.main.save_route_dialog.*
 import kotlinx.android.synthetic.main.save_route_dialog.view.*
 import java.lang.ref.WeakReference
 
@@ -157,7 +159,6 @@ class RoutesFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
                 alertDialog.dismiss()
                 name = dialogView.dialogSaveName.text.toString()
                 comments = dialogView.dialogSaveComment.text.toString()
-                level = dialogView.dialogSaveLevel.text.toString()
 
                 saveRoute()
             }
@@ -170,8 +171,18 @@ class RoutesFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
                 securityLevel = fl
                 println(securityLevel)
             }
+
+            dialogView.spinnerSaveRoute.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                    level = p0?.getItemAtPosition(p2).toString()
+                    println(level)
+                }
+
+                override fun onNothingSelected(p0: AdapterView<*>?) {
+                    TODO("Not yet implemented")
+                }
+            }
         }
-        
     }
 
     private fun saveRoute() {
