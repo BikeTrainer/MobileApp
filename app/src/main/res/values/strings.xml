@@ -36,5 +36,6 @@
     <string name="menu_routes_record">Nueva Ruta</string>
     <string name="menu_routes_list">Rutas Disponibles</string>
     <string name="go_back">Volver</string>
+    <string name="menu_my_routes_list">Mis Rutas</string>
 
 </resources>

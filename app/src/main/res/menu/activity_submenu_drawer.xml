@@ -17,4 +17,9 @@
         android:icon="@drawable/mapbox_ic_route_preview_dark"
         android:title="@string/menu_routes_list" />
 
+    <item
+        android:id="@+id/my_routes_list"
+        android:icon="@drawable/mapbox_ic_route_preview_dark"
+        android:title="@string/menu_my_routes_list" />
+
 </menu>

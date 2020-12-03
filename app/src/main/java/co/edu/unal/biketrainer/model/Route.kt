@@ -4,6 +4,7 @@ import android.location.Location
 import com.google.firebase.Timestamp
 
 data class Route(
+    var id: String? = null,
     var name: String? = null,
     var comments: String? = null,
     var level: String? = null,

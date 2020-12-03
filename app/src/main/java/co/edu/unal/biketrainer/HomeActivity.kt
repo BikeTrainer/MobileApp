@@ -170,7 +170,12 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     .replace(R.id.nav_host_fragment, fragment).commit()
             }
             R.id.routes_list -> {
-                val fragment = RoutesListFragment.newInstance(email.toString())
+                val fragment = RoutesListFragment.newInstance(email.toString(), false)
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.nav_host_fragment, fragment).commit()
+            }
+            R.id.my_routes_list -> {
+                val fragment = RoutesListFragment.newInstance(email.toString(), true)
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.nav_host_fragment, fragment).commit()
             }
