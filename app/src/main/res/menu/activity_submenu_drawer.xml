@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <item
+        android:id="@+id/back_to_main"
+        android:icon="@drawable/ic_baseline_arrow_back_ios_24"
+        android:title="@string/go_back" />
+
+    <item
+        android:id="@+id/routes_record"
+        android:icon="@drawable/mapbox_ic_route_origin"
+        android:title="@string/menu_routes_record" />
+    <item
+        android:id="@+id/routes_list"
+        android:icon="@drawable/mapbox_ic_route_preview_dark"
+        android:title="@string/menu_routes_list" />
+
+</menu>

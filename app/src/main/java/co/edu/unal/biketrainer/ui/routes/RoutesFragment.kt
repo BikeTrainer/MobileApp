@@ -14,16 +14,15 @@ import android.view.ViewGroup
 import android.widget.SeekBar
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import co.edu.unal.biketrainer.R
-import co.edu.unal.biketrainer.ui.home.HomeFragment
+import co.edu.unal.biketrainer.R.*
+import co.edu.unal.biketrainer.model.Route
 import co.edu.unal.biketrainer.utils.Utils
 import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.gson.Gson
 import com.mapbox.android.core.location.*
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
@@ -45,37 +44,36 @@ import com.mapbox.mapboxsdk.style.layers.LineLayer
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.navigation.core.MapboxNavigation
-import com.mapbox.navigation.ui.map.NavigationMapboxMap
 import kotlinx.android.synthetic.main.fragment_routes.*
-import kotlinx.android.synthetic.main.save_route_dialog.*
 import kotlinx.android.synthetic.main.save_route_dialog.view.*
 import java.lang.ref.WeakReference
-import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
-class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
+class RoutesFragment : Fragment(), OnMapReadyCallback, PermissionsListener {
 
 
     companion object {
         private const val DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L
         private const val DEFAULT_MAX_WAIT_TIME: Long = DEFAULT_INTERVAL_IN_MILLISECONDS * 5
         const val ARGS_NAME = "email"
+        private var staticRoute: Route? = null
 
-        fun newInstance(name: String): Fragment{
+        fun newInstance(name: String): Fragment {
             val args = Bundle()
             args.putString(ARGS_NAME, name)
             val fragment = RoutesFragment()
             fragment.arguments = args
             return fragment
         }
+
+        fun newInstance(name: String, route: Route): Fragment {
+            staticRoute = route
+            return newInstance(name)
+        }
     }
 
-    private lateinit var routeCoordinates: ArrayList<Point>
+    private lateinit var routeCoordinates: ArrayList<Location>
 
     private lateinit var locationEngine: LocationEngine
-    private lateinit var navigationMapboxMap: NavigationMapboxMap
     private lateinit var mapboxNavigation: MapboxNavigation
     private var mapboxMap: MapboxMap? = null
     private var permissionsManager: PermissionsManager = PermissionsManager(this)
@@ -92,7 +90,8 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
     private val db = FirebaseFirestore.getInstance()
     private val email by lazy { arguments?.getString(ARGS_NAME) }
 
-    private val callback: RoutesFragmentLocationCallback = RoutesFragmentLocationCallback(this)
+    private val callback: RoutesFragmentLocationCallback =
+        RoutesFragmentLocationCallback(this, false)
 
     private lateinit var viewModel: RoutesViewModel
 
@@ -100,7 +99,7 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_routes, container, false)
+        return inflater.inflate(layout.fragment_routes, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -109,7 +108,6 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
         map_view.onCreate(savedInstanceState)
 
         map_view.getMapAsync(this)
-
         val mapboxNavigationOptions = MapboxNavigation
             .defaultNavigationOptionsBuilder(
                 requireContext(), Utils.getMapboxAccessToken(
@@ -121,14 +119,15 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
         mapboxNavigation = MapboxNavigation(mapboxNavigationOptions)
         startRecording.visibility = View.VISIBLE
         initListeners()
-        Snackbar.make(container, R.string.msg_long_press_map_to_place_waypoint, LENGTH_SHORT).show()
+        Snackbar.make(container, string.msg_long_press_map_to_place_waypoint, LENGTH_SHORT).show()
     }
 
     @SuppressLint("MissingPermission")
     private fun initListeners() {
         startRecording.setOnClickListener {
+            routeCoordinates = ArrayList<Location>()
             mapboxNavigation.let {
-                initLocationEngine()
+                callback.trackingMode = true
                 it.startTripSession()
             }
             origin = mapboxMap?.locationComponent?.lastKnownLocation
@@ -144,25 +143,26 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
             destination = mapboxMap?.locationComponent?.lastKnownLocation
             stopRecording.visibility = View.GONE
             saveRoute.visibility = View.VISIBLE
-            println("stop : "+locationEngine)
+            println("stop : " + locationEngine)
 
             // Mostrar dialogo
-            val dialogView = layoutInflater.inflate(R.layout.save_route_dialog, null)
-            val dialog = AlertDialog.Builder(stopRecording.context).setView(dialogView).setTitle("Guardar Ruta")
+            val dialogView = layoutInflater.inflate(layout.save_route_dialog, null)
+            val dialog = AlertDialog.Builder(stopRecording.context).setView(dialogView)
+                .setTitle("Guardar Ruta")
 
             val alertDialog = dialog.show()
 
-            dialogView.dialogSaveButton.setOnClickListener{
-                println("guardar : "+locationEngine)
+            dialogView.dialogSaveButton.setOnClickListener {
+                println("guardar : " + locationEngine)
                 alertDialog.dismiss()
                 name = dialogView.dialogSaveName.text.toString()
                 comments = dialogView.dialogSaveComment.text.toString()
                 level = dialogView.dialogSaveLevel.text.toString()
-                
+
                 saveRoute()
             }
 
-            dialogView.dialogCancelButton.setOnClickListener{
+            dialogView.dialogCancelButton.setOnClickListener {
                 alertDialog.dismiss()
             }
 
@@ -171,52 +171,27 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
                 println(securityLevel)
             }
         }
-
-        saveRoute.setOnClickListener {
-            //TODO: Save on firebase route
-            var route = HashMap<String, String>()
-            val routeJson = Gson().toJson(routeCoordinates)
-            var duration = Calendar.getInstance()
-            duration.timeInMillis = destination?.time!!.minus(origin?.time!!)
-            route.put(email.toString(), routeJson)
-            db.collection("routes").add(
-                hashMapOf(
-                    "average_duration" to SimpleDateFormat("HH:mm:ss").format(duration.time),
-                    "comments" to comments,
-                    "created_by" to email.toString(),
-                    "created_at" to com.google.firebase.Timestamp.now(),
-                    "destination" to destination,
-                    "route" to routeJson,
-                    "level" to level,
-                    "name" to name,
-                    "origin" to origin,
-                    "security_level" to securityLevel,
-                    "total_visits" to ""
-                )
-            )
-            routeCoordinates.clear()
-        }
-
+        
     }
 
-    private fun saveRoute(){
+    private fun saveRoute() {
         //TODO: Save on firebase route
-        var route = HashMap<String, String>()
-        val routeJson = Gson().toJson(routeCoordinates)
-        route.put(email.toString(), routeJson )
-        db.collection("routes").add(hashMapOf("average_duration" to (destination?.time?.minus(
-            origin?.time!!
-        )),
-            "comments" to comments,
-            "created_by" to email.toString(),
-            "destination" to destination,
-            "route" to routeJson,
-            "level" to level,
-            "name" to name,
-            "origin" to origin,
-            "security_level" to securityLevel,
-            "total_visits" to ""
-        ))
+        var route = Route()
+        route.name = name
+        route.level = level
+        route.created_by = email
+        route.created_at = Timestamp.now()
+        route.origin = origin
+        route.destination = destination
+        route.average_duration = destination?.time!!.minus(origin?.time!!)
+        route.security = securityLevel
+        route.comments = comments
+        route.visitors = 0
+        route.route = routeCoordinates
+        db.collection("routes").add(
+            route
+        )
+        routeCoordinates.clear()
 
     }
 
@@ -232,13 +207,41 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
         locationEngine.getLastLocation(callback)
     }
 
+    @SuppressLint("ResourceAsColor")
     override fun onMapReady(mapboxMap: MapboxMap) {
         mapboxMap.setStyle(Style.LIGHT, Style.OnStyleLoaded {
             this.mapboxMap = mapboxMap
             enableLocationComponent(it)
+            initLocationEngine()
+
+            if (staticRoute != null) {
+                it.addSource(
+                    GeoJsonSource(
+                        "line-source",
+                        FeatureCollection.fromFeatures(
+                            arrayOf<Feature>(
+                                Feature.fromGeometry(
+                                    staticRoute!!.route?.let { it1 ->
+                                        LineString.fromLngLats(it1.map { location ->
+                                            Point.fromLngLat(location.longitude, location.latitude)
+                                        })
+                                    }
+                                )
+                            )
+                        )
+                    )
+                )
+
+                it.addLayer(
+                    LineLayer("linelayer", "line-source").withProperties(
+                        PropertyFactory.lineWidth(10f),
+                        PropertyFactory.lineColor(color.colorBikeTrainer)
+                    )
+                )
+            }
         })
 
-        routeCoordinates = ArrayList<Point>()
+
     }
 
     @SuppressLint("MissingPermission")
@@ -247,7 +250,9 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
 
             val customLocationComponentOptions = LocationComponentOptions.builder(requireContext())
                 .trackingGesturesManagement(true)
-                .accuracyColor(ContextCompat.getColor(requireContext(), R.color.mapboxGreen))
+                .accuracyColor(ContextCompat.getColor(requireContext(), color.mapboxGreen))
+                .pulseEnabled(true)
+                .pulseMaxRadius(3.0f)
                 .build()
 
             val locationComponentActivationOptions = LocationComponentActivationOptions.builder(
@@ -256,13 +261,9 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
                 .build()
 
             mapboxMap?.locationComponent?.apply {
-
                 activateLocationComponent(locationComponentActivationOptions)
-
                 isLocationComponentEnabled = true
-
                 cameraMode = CameraMode.TRACKING
-
                 renderMode = RenderMode.COMPASS
 
             }
@@ -271,6 +272,7 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
             permissionsManager.requestLocationPermissions(this.activity)
         }
     }
+
     override fun onStart() {
         super.onStart()
         map_view?.onStart()
@@ -310,7 +312,8 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (locationEngine != null) {
+        staticRoute = null
+        if (this::locationEngine.isInitialized && locationEngine != null) {
             locationEngine.removeLocationUpdates(callback)
         }
         map_view?.onDestroy()
@@ -319,7 +322,7 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
     override fun onExplanationNeeded(permissionsToExplain: MutableList<String>?) {
         Toast.makeText(
             this.requireContext(),
-            R.string.user_location_permission_explanation,
+            string.user_location_permission_explanation,
             Toast.LENGTH_LONG
         ).show()
     }
@@ -330,40 +333,40 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
         } else {
             Toast.makeText(
                 this.requireContext(),
-                R.string.user_location_permission_not_granted,
+                string.user_location_permission_not_granted,
                 Toast.LENGTH_LONG
             ).show()
         }
     }
-    private class RoutesFragmentLocationCallback(routesFragment: RoutesFragment) :LocationEngineCallback<LocationEngineResult>{
 
+    private class RoutesFragmentLocationCallback(
+        routesFragment: RoutesFragment,
+        tracingkMode: Boolean
+    ) :
+        LocationEngineCallback<LocationEngineResult> {
+
+        var trackingMode = tracingkMode
         private val activityRef = WeakReference(routesFragment)
 
         @SuppressLint("ResourceAsColor")
         override fun onSuccess(result: LocationEngineResult?) {
             var activity = activityRef.get()
-            if(activity != null){
+            if (activity != null) {
                 var location: Location? = result?.lastLocation ?: return
-                if(!activity.routeCoordinates.isEmpty()){
-                    var lastLocation = activity.routeCoordinates[activity.routeCoordinates.size - 1]
-                    if( location?.latitude  != lastLocation.latitude() && location?.longitude != lastLocation.longitude()){
-                        activity.routeCoordinates.add(
-                            Point.fromLngLat(
-                                location?.longitude!!,
-                                location.latitude
-                            )
-                        )
+                if (trackingMode) {
+                    if (!activity.routeCoordinates.isEmpty()) {
+                        var lastLocation =
+                            activity.routeCoordinates[activity.routeCoordinates.size - 1]
+                        if (location?.latitude != lastLocation.latitude && location?.longitude != lastLocation.longitude) {
+                            activity.routeCoordinates.add(location!!)
+                        }
+                    } else {
+                        activity.routeCoordinates.add(location!!)
                     }
-                } else {
-                    activity.routeCoordinates.add(
-                        Point.fromLngLat(
-                            location?.longitude!!,
-                            location.latitude
-                        )
-                    )
                 }
-                //TODO: Save location
-                if(activity.mapboxMap != null && result.lastLocation != null) {
+
+
+                if (activity.mapboxMap != null && result.lastLocation != null) {
                     val map = activity.mapboxMap
                     map!!.animateCamera(
                         CameraUpdateFactory.newCameraPosition(
@@ -379,27 +382,35 @@ class RoutesFragment: Fragment(), OnMapReadyCallback, PermissionsListener {
                         ), 4000
                     )
 
-                    map.setStyle(Style.LIGHT, Style.OnStyleLoaded {
-                        it.addSource(
-                            GeoJsonSource(
-                                "line-source",
-                                FeatureCollection.fromFeatures(
-                                    arrayOf<Feature>(
-                                        Feature.fromGeometry(
-                                            LineString.fromLngLats(activity.routeCoordinates)
+                    if (trackingMode) {
+                        map.setStyle(Style.LIGHT, Style.OnStyleLoaded {
+                            it.addSource(
+                                GeoJsonSource(
+                                    "line-source",
+                                    FeatureCollection.fromFeatures(
+                                        arrayOf<Feature>(
+                                            Feature.fromGeometry(
+                                                LineString.fromLngLats(activity.routeCoordinates.map { location ->
+                                                    Point.fromLngLat(
+                                                        location.longitude,
+                                                        location.latitude
+                                                    )
+                                                })
+                                            )
                                         )
                                     )
                                 )
                             )
-                        )
 
-                        it.addLayer(
-                            LineLayer("linelayer", "line-source").withProperties(
-                                PropertyFactory.lineWidth(10f),
-                                PropertyFactory.lineColor(R.color.colorBikeTrainer)
+                            it.addLayer(
+                                LineLayer("linelayer", "line-source").withProperties(
+                                    PropertyFactory.lineWidth(10f),
+                                    PropertyFactory.lineColor(color.colorBikeTrainer)
+                                )
                             )
-                        )
-                    })
+                        })
+                    }
+
                     map.locationComponent.forceLocationUpdate(location)
                 }
             }

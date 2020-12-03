@@ -59,17 +59,16 @@
         android:visibility="gone"
         mapbox:layout_constraintBottom_toBottomOf="parent"
         mapbox:layout_constraintEnd_toEndOf="parent"
-        mapbox:layout_constraintStart_toStartOf="parent"
-        />
+        mapbox:layout_constraintStart_toStartOf="parent" />
 
-    <com.mapbox.navigation.ui.NavigationView
-        android:id="@+id/navigation_view"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        mapbox:layout_constraintTop_toTopOf="parent"
-        mapbox:layout_constraintEnd_toEndOf="parent"
-        mapbox:layout_constraintStart_toStartOf="parent"
-        mapbox:layout_constraintBottom_toBottomOf="parent" />
+    <!--    <com.mapbox.navigation.ui.NavigationView-->
+    <!--        android:id="@+id/navigation_view"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="0dp"-->
+    <!--        mapbox:layout_constraintTop_toTopOf="parent"-->
+    <!--        mapbox:layout_constraintEnd_toEndOf="parent"-->
+    <!--        mapbox:layout_constraintStart_toStartOf="parent"-->
+    <!--        mapbox:layout_constraintBottom_toBottomOf="parent" />-->
 
 
 </FrameLayout>
