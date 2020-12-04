@@ -26,6 +26,7 @@ import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.mapbox.mapboxsdk.Mapbox
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 
@@ -111,6 +112,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         db.collection("users").document(email).get().addOnSuccessListener {
             nameMenuTextView.text = it.get("name") as String? + " " + it.get("lastname") as String?
             providerMenuTextView.text = provider
+            Picasso.get().load(it.get("image_profile") as String?).into(avatar)
             emailMenuTextView.text = email
 
             this.user = User()
