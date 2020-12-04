@@ -45,6 +45,8 @@
     <string name="menu_near_routes">Rutas Cercanas</string>
     <string name="menu_top_routes">Mejor Valoradas</string>
     <string name="menu_recommended_routes">Recomendadas para ti</string>
+    <string name="HEX_CHARS">phqiHmHGwJfFNNAx</string>
+    <string name="digest_method">SHA-256</string>
 
     <string-array name="levels">
         <item>Principiante</item>

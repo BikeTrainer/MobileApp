@@ -121,7 +121,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             this.user!!.level = it.get("level") as String?
         }
 
-        val fragment = RoutesFragment.newInstance(user)
+        val fragment = ProfileFragment.newInstance(email.toString())
         supportFragmentManager.beginTransaction()
             .replace(R.id.nav_host_fragment, fragment).commit()
     }
