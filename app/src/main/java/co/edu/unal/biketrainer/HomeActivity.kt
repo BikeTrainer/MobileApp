@@ -121,11 +121,12 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             this.user!!.lastname = it.get("lastname") as String?
             this.user!!.phone = it.get("phone") as String?
             this.user!!.level = it.get("level") as String?
+            val fragment = HomeFragment.newInstance(user)
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.nav_host_fragment, fragment).commit()
         }
 
-        val fragment = ProfileFragment.newInstance(email.toString())
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.nav_host_fragment, fragment).commit()
+
     }
 
     private fun logOut(provider: String) {
