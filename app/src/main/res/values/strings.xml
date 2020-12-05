@@ -48,11 +48,36 @@
     <string name="HEX_CHARS">phqiHmHGwJfFNNAx</string>
     <string name="digest_method">SHA-256</string>
 
+    <string name="groups">Grupos</string>
+    <string name="menu_groups_record">Nuevo Grupo</string>
+    <string name="menu_my_groups_list">Mis Grupos</string>
+    <string name="recommended_groups">Grupos Recomendadas</string>
+    <string name="menu_near_groups">Grupos Cercanos</string>
+    <string name="menu_top_groups">Mejor Valorados</string>
+    <string name="menu_recommended_groups">Recomendados para ti</string>
+    <string name="menu_groups_list">Grupos Disponibles</string>
+
+    <string name="name_label_item_group">Grupo: </string>
+    <string name="level_label_item_group">Nivel: </string>
+    <string name="bikers_label_item_group">Participantes: </string>
+
     <string-array name="levels">
         <item>Principiante</item>
         <item>Intermedio</item>
         <item>Avanzado</item>
         <item>Experto</item>
+    </string-array>
+
+    <string-array name="bikers">
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
     </string-array>
 
 </resources>

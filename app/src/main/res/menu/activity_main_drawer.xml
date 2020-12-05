@@ -26,6 +26,12 @@
             android:id="@+id/nav_profile"
             android:icon="@android:drawable/ic_menu_edit"
             android:title="@string/menu_profile" />
+
+        <item
+            android:id="@+id/nav_groups"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="@string/groups" />
+
         <item
             android:id="@id/nav_host"
             android:title="@string/bike_trainer"
