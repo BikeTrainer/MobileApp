@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <item
+        android:id="@+id/back_to_main"
+        android:icon="@drawable/ic_baseline_arrow_back_ios_24"
+        android:title="@string/go_back" />
+    <item
+        android:id="@+id/groups_record"
+        android:icon="@drawable/ic_baseline_fiber_manual_record_24"
+        android:title="@string/menu_groups_record" />
+    <item
+        android:id="@+id/my_groups_list"
+        android:icon="@drawable/ic_baseline_map_24"
+        android:title="@string/menu_my_groups_list" />
+    <item
+        android:id="@+id/near_groups"
+        android:icon="@drawable/ic_baseline_near_me_24"
+        android:title="@string/menu_near_groups" />
+    <item
+        android:id="@+id/top_groups"
+        android:icon="@drawable/ic_baseline_stars_24"
+        android:title="@string/menu_top_groups" />
+    <item
+        android:id="@+id/recommended_groups"
+        android:icon="@drawable/ic_baseline_emoji_flags_24"
+        android:title="@string/menu_recommended_groups" />
+    <item
+        android:id="@+id/groups_list"
+        android:icon="@drawable/ic_baseline_travel_explore_24"
+        android:title="@string/menu_groups_list" />
+
+
+</menu>
