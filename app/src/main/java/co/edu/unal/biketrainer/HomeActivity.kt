@@ -15,6 +15,8 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import co.edu.unal.biketrainer.model.User
 import co.edu.unal.biketrainer.ui.gallery.GalleryFragment
+import co.edu.unal.biketrainer.ui.groups.GroupsFragment
+import co.edu.unal.biketrainer.ui.groups.list.GroupsListFragment
 import co.edu.unal.biketrainer.ui.home.HomeFragment
 import co.edu.unal.biketrainer.ui.profile.ProfileFragment
 import co.edu.unal.biketrainer.ui.routes.RoutesFragment
@@ -222,6 +224,24 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 val fragment = RoutesListFragment.newInstance(
                     user,
                     this.getString(R.string.menu_top_routes)
+                )
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.nav_host_fragment, fragment).commit()
+            }
+            R.id.nav_groups -> {
+                println("opcion grupos")
+                nav_view.menu.clear()
+                nav_view.inflateMenu(R.menu.activity_submenu_drawer_groups)
+            }
+            R.id.groups_record -> {
+                val fragment = GroupsFragment.newInstance(user)
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.nav_host_fragment, fragment).commit()
+            }
+            R.id.my_groups_list -> {
+                val fragment = GroupsListFragment.newInstance(
+                    user,
+                    this.getString(R.string.menu_my_groups_list)
                 )
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.nav_host_fragment, fragment).commit()
