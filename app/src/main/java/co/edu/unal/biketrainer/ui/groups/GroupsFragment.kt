@@ -2,6 +2,7 @@ package co.edu.unal.biketrainer.ui.groups
 
 import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,22 +10,18 @@ import android.widget.AdapterView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import co.edu.unal.biketrainer.R
-import co.edu.unal.biketrainer.R.*
+import co.edu.unal.biketrainer.R.layout
 import co.edu.unal.biketrainer.model.Group
 import co.edu.unal.biketrainer.model.User
 import co.edu.unal.biketrainer.ui.groups.list.GroupsListFragment
 import co.edu.unal.biketrainer.ui.routes.GroupsViewModel
-import co.edu.unal.biketrainer.ui.routes.RoutesViewModel
-import co.edu.unal.biketrainer.utils.Utils
+import co.edu.unal.biketrainer.ui.routes.list.RoutesListFragment
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
-import com.mapbox.navigation.core.MapboxNavigation
 import kotlinx.android.synthetic.main.fragment_groups.*
-import kotlinx.android.synthetic.main.fragment_routes.*
-import kotlinx.android.synthetic.main.save_route_dialog.view.*
 
 
-class GroupsFragment : Fragment() {
+class GroupsFragment : Fragment(), RoutesListFragment.OnChildFragmentInteractionListener {
 
     companion object {
         private var user: User? = null
@@ -48,6 +45,7 @@ class GroupsFragment : Fragment() {
     private var level: String? = null
     private var bikers: Int? = 2
     private var gpublic: Boolean? = false
+    private var id_route: String? = null
 
 
     private val db = FirebaseFirestore.getInstance()
@@ -63,6 +61,11 @@ class GroupsFragment : Fragment() {
         return inflater.inflate(layout.fragment_groups, container, false)
     }
 
+    // Escuchar mensaje desde el fragmente de RoutesList
+    override fun messageFromChildToParent(myString: String?) {
+        Log.i("TAG", myString!!)
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(GroupsViewModel::class.java)
@@ -76,11 +79,21 @@ class GroupsFragment : Fragment() {
             }
             saveGroup()
         }
+
+
+
+        // Carga el fragmente de la lista de rutas
+        val fragment =
+            RoutesListFragment.newInstance(user, this.getString(R.string.groups_list_routes))
+        this.activity?.supportFragmentManager?.beginTransaction()
+            ?.replace(R.id.nav_routes_fragment, fragment)?.commit()
+
+
+        // Lista desplegable de la dificultad
         groupsLevelSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
                 level = p0?.getItemAtPosition(p2).toString()
                 println(level)
-                println(email)
             }
 
             override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -88,6 +101,7 @@ class GroupsFragment : Fragment() {
             }
         }
 
+        // Lista desplegable del numero de participantes
         groupsBikersSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
                 bikers = p0?.getItemAtPosition(p2).toString().toInt()
@@ -111,9 +125,22 @@ class GroupsFragment : Fragment() {
         group.bikers = bikers
         group.gpublic = gpublic!!
 
+
+        // Enviar objeto a firebase en la collection groups
         db.collection("groups").add(
             group
         )
+
+        /*db.collection("groups").get().addOnSuccessListener{ query ->
+            query.documents.forEach {
+                println("id " + it.id)
+                println("id ref id " + it.reference.id)
+            }
+        }
+        val ref = db.collection("group").document()
+        val myId = ref.id
+        println("id mid " + myId)*/
+
         //groupCoordinates.clear()
 
         var fragment =

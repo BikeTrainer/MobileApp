@@ -9,5 +9,6 @@ class Group (
     var bikers: Int? = 0,
     var created_by: String? = null,
     var created_at: Timestamp? = null,
-    var gpublic: Boolean = false
+    var gpublic: Boolean = false,
+    var id_route: String? = null
 )
