@@ -57,6 +57,7 @@
     <string name="menu_recommended_groups">Recomendados para ti</string>
     <string name="menu_groups_list">Grupos Disponibles</string>
 
+    <string name="groups_list_routes">grupos_rutas</string>
     <string name="name_label_item_group">Grupo: </string>
     <string name="level_label_item_group">Nivel: </string>
     <string name="bikers_label_item_group">Participantes: </string>
