@@ -23,6 +23,7 @@ import com.google.gson.JsonObject
 import kotlinx.android.synthetic.main.fragment_routes_list.*
 import java.text.SimpleDateFormat
 
+
 class RoutesListFragment : Fragment(), AdapterView.OnItemClickListener {
 
     companion object {
@@ -40,6 +41,8 @@ class RoutesListFragment : Fragment(), AdapterView.OnItemClickListener {
     private val db = FirebaseFirestore.getInstance()
     private var items = ArrayList<Route>()
 
+    private var mParentListener: OnChildFragmentInteractionListener? = null
+
     private val email by lazy { user?.id.toString() }
 
     override fun onCreateView(
@@ -48,6 +51,11 @@ class RoutesListFragment : Fragment(), AdapterView.OnItemClickListener {
     ): View? {
         return inflater.inflate(R.layout.fragment_routes_list, container, false)
     }
+
+    interface OnChildFragmentInteractionListener {
+        fun messageFromChildToParent(myString: String?)
+    }
+
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -160,11 +168,23 @@ class RoutesListFragment : Fragment(), AdapterView.OnItemClickListener {
 
 
     override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        var fragment = RoutesFragment.newInstance(user, items[position])
-        this.activity?.supportFragmentManager?.beginTransaction()
-            ?.replace(R.id.nav_host_fragment, fragment)?.commit()
-        Toast.makeText(this.requireContext(), items[position].name.toString(), Toast.LENGTH_SHORT)
-            .show()
+        if (type != getContext()?.getString(R.string.groups_list_routes)){
+            var fragment = RoutesFragment.newInstance(user, items[position])
+            this.activity?.supportFragmentManager?.beginTransaction()
+                ?.replace(R.id.nav_host_fragment, fragment)?.commit()
+            Toast.makeText(
+                this.requireContext(),
+                items[position].name.toString(),
+                Toast.LENGTH_SHORT
+            )
+                .show()
+        }else{
+            println("agregar id al grupo")
+            println(items[position].id)
+
+            // Envir mensaje al GroupFragment
+            mParentListener?.messageFromChildToParent("Hello, parent. I am your child.");
+        }
     }
 
     private class RouteAdapter(
@@ -210,9 +230,12 @@ class RoutesListFragment : Fragment(), AdapterView.OnItemClickListener {
             duration.text = SimpleDateFormat("HH:mm:ss").format(route.average_duration!!)
             distance.text = "%.2f km".format(route.origin?.distanceTo(route.destination)?.div(1000))
 
-            if (routesListFragment.email != route.created_by) {
+            if (routesListFragment.email != route.created_by || type == getContext().getString(R.string.groups_list_routes)) {
                 deleteButton.visibility = View.INVISIBLE
             }
+            println(type)
+            println(getContext().getString(R.string.groups_list_routes))
+
 
             deleteButton.setOnClickListener(View.OnClickListener {
                 val builder = AlertDialog.Builder(context)
