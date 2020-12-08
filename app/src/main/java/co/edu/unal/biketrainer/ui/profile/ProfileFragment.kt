@@ -45,6 +45,7 @@ class ProfileFragment : Fragment() {
     lateinit var option: Spinner
     lateinit var level: String
     private var filePath: Uri? = null
+    private var url_to_avatar: String? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,18 +69,21 @@ class ProfileFragment : Fragment() {
     ): View? {
 
 
-        val email:String by lazy { arguments?.getString("email").toString() }
+        val email: String by lazy { arguments?.getString("email").toString() }
         println("llego al perfil" + email)
 
-        val options: MutableList<String> = arrayListOf("Facil", "Intermedio", "Dificil")
+        val options: MutableList<String> =
+            this.resources.getStringArray(R.array.levels).toMutableList()
 
         //Buscar datos
         db.collection("users").document(email).get().addOnSuccessListener {
             profileNameEditText.setText(it.get("name") as String?)
             profileLastnameEditText.setText(it.get("lastname") as String?)
             profileLevelSpinner.setSelection(options.indexOf(it.get("level") as String?))
-            Picasso.get().load(it.get("image_profile") as String?).into(avatar_picker)
-
+            if (it.get("image_profile") != null) {
+                url_to_avatar = it.get("image_profile") as String?
+                Picasso.get().load(url_to_avatar).into(avatar_picker)
+            }
             profilePhoneEditText.setText(it.get("phone") as String?)
             profileDateEditText.setText(it.get("date") as String?)
 
@@ -87,69 +91,84 @@ class ProfileFragment : Fragment() {
             profileSaveButton.setOnClickListener {
                 println("boton actualizar")
 
-                val storageRef = storage.reference
+                if (filePath != null) {
+                    val storageRef = storage.reference
 
-                var bytes = MessageDigest.getInstance(this.getString(R.string.digest_method))
-                    .digest(email.toString().toByteArray())
-                var avatarPath = StringBuilder(bytes.size * 2)
+                    var bytes = MessageDigest.getInstance(this.getString(R.string.digest_method))
+                        .digest(email.toString().toByteArray())
+                    var avatarPath = StringBuilder(bytes.size * 2)
 
-                bytes.forEach {
-                    val i = it.toInt()
-                    avatarPath.append(this.getString(R.string.HEX_CHARS)[i shr 4 and 0x0f])
-                    avatarPath.append(this.getString(R.string.HEX_CHARS)[i and 0x0f])
-                }
+                    bytes.forEach {
+                        val i = it.toInt()
+                        avatarPath.append(this.getString(R.string.HEX_CHARS)[i shr 4 and 0x0f])
+                        avatarPath.append(this.getString(R.string.HEX_CHARS)[i and 0x0f])
+                    }
 
-                val avatarRef = storageRef.child("$avatarPath/avatar.jpg")
+                    val avatarRef = storageRef.child("$avatarPath/avatar.jpg")
 
-                var downloadUri: Uri? = null
+                    var downloadUri: Uri? = null
 
-                avatarRef.putFile(filePath!!).addOnSuccessListener {
-                    Toast.makeText(
-                        this.requireContext(),
-                        "Se actualizó la imagen de perfil",
-                        Toast.LENGTH_SHORT
-                    )
-                    println(avatarRef.path)
-                }.continueWithTask { task ->
-                    if (!task.isSuccessful) {
-                        task.exception?.let {
-                            throw it
+
+
+                    avatarRef.putFile(filePath!!).addOnSuccessListener {
+                        Toast.makeText(
+                            this.requireContext(),
+                            "Se actualizó la imagen de perfil",
+                            Toast.LENGTH_SHORT
+                        )
+                        println(avatarRef.path)
+                    }.continueWithTask { task ->
+                        if (!task.isSuccessful) {
+                            task.exception?.let {
+                                throw it
+                            }
+                        }
+                        avatarRef.downloadUrl
+                    }.addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            downloadUri = task.result
+                            db.collection("users").document(email).set(
+                                hashMapOf(
+                                    "name" to profileNameEditText.text.toString(),
+                                    "lastname" to profileLastnameEditText.text.toString(),
+                                    "phone" to profilePhoneEditText.text.toString(),
+                                    "date" to profileDateEditText.text.toString(),
+                                    "level" to level,
+                                    "image_profile" to downloadUri.toString()
+                                )
+                            )
+                        } else {
+                            // Handle failures
+                            // ...
                         }
                     }
-                    avatarRef.downloadUrl
-                }.addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        downloadUri = task.result
-                        db.collection("users").document(email).set(
-                            hashMapOf(
-                                "name" to profileNameEditText.text.toString(),
-                                "lastname" to profileLastnameEditText.text.toString(),
-                                "phone" to profilePhoneEditText.text.toString(),
-                                "date" to profileDateEditText.text.toString(),
-                                "level" to level,
-                                "image_profile" to downloadUri.toString()
-                            )
+
+                } else {
+                    db.collection("users").document(email).set(
+                        hashMapOf(
+                            "name" to profileNameEditText.text.toString(),
+                            "lastname" to profileLastnameEditText.text.toString(),
+                            "phone" to profilePhoneEditText.text.toString(),
+                            "date" to profileDateEditText.text.toString(),
+                            "level" to level,
+                            "image_profile" to url_to_avatar
                         )
-                    } else {
-                        // Handle failures
-                        // ...
+                    )
+                }
+            }
+
+            profileLevelSpinner.onItemSelectedListener =
+                object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                        level = p0?.getItemAtPosition(p2).toString()
+                        println(level)
+
+                    }
+
+                    override fun onNothingSelected(p0: AdapterView<*>?) {
+                        TODO("Not yet implemented")
                     }
                 }
-
-
-            }
-
-            profileLevelSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
-                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                    level = p0?.getItemAtPosition(p2).toString()
-                    println(level)
-
-                }
-
-                override fun onNothingSelected(p0: AdapterView<*>?) {
-                    TODO("Not yet implemented")
-                }
-            }
         }
 
 

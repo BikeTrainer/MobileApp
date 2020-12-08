@@ -2,11 +2,11 @@ package co.edu.unal.biketrainer.ui.groups
 
 import android.location.Location
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import co.edu.unal.biketrainer.R
@@ -53,17 +53,24 @@ class GroupsFragment : Fragment(), RoutesListFragment.OnChildFragmentInteraction
 
     private lateinit var viewModel: GroupsViewModel
 
+    var mChildFragment: RoutesListFragment.OnChildFragmentInteractionListener? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-        return inflater.inflate(layout.fragment_groups, container, false)
+        val root = inflater.inflate(layout.fragment_groups, container, false)
+        mChildFragment = this
+        return root
     }
 
-    // Escuchar mensaje desde el fragmente de RoutesList
-    override fun messageFromChildToParent(myString: String?) {
-        Log.i("TAG", myString!!)
+    override fun messageFromChildToParent(id_route: String?) {
+        Toast.makeText(
+            this.requireContext(),
+            "Ruta seleccionada: " + id_route,
+            Toast.LENGTH_SHORT
+        ).show()
+        this.id_route = id_route
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -81,19 +88,20 @@ class GroupsFragment : Fragment(), RoutesListFragment.OnChildFragmentInteraction
         }
 
 
-
-        // Carga el fragmente de la lista de rutas
-        val fragment =
-            RoutesListFragment.newInstance(user, this.getString(R.string.groups_list_routes))
-        this.activity?.supportFragmentManager?.beginTransaction()
-            ?.replace(R.id.nav_routes_fragment, fragment)?.commit()
-
-
         // Lista desplegable de la dificultad
         groupsLevelSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
                 level = p0?.getItemAtPosition(p2).toString()
                 println(level)
+                val fragment =
+                    RoutesListFragment.newInstance(
+                        user,
+                        requireActivity().getString(R.string.groups_list_routes),
+                        level
+                    ) as RoutesListFragment
+                fragment.initialiseChildManagerInterface(mChildFragment!!)
+                requireActivity().supportFragmentManager.beginTransaction()
+                    ?.replace(R.id.nav_routes_fragment, fragment).commit()
             }
 
             override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -124,6 +132,7 @@ class GroupsFragment : Fragment(), RoutesListFragment.OnChildFragmentInteraction
         group.level = level
         group.bikers = bikers
         group.gpublic = gpublic!!
+        group.id_route = id_route
 
 
         // Enviar objeto a firebase en la collection groups
