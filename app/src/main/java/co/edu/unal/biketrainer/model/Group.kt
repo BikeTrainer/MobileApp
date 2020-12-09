@@ -2,7 +2,7 @@ package co.edu.unal.biketrainer.model
 
 import com.google.firebase.Timestamp
 
-class Group (
+class Group(
     var id: String? = null,
     var name: String? = null,
     var level: String? = null,
@@ -10,5 +10,6 @@ class Group (
     var created_by: String? = null,
     var created_at: Timestamp? = null,
     var gpublic: Boolean = false,
-    var id_route: String? = null
+    var route: Route? = null,
+    var members: ArrayList<User>? = null
 )

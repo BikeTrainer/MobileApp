@@ -4,20 +4,32 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.os.Bundle;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.core.content.res.ResourcesCompat;
 
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
 import java.util.Random;
 
+import co.edu.unal.biketrainer.model.Route;
 import timber.log.Timber;
 
 
@@ -92,5 +104,75 @@ public class Utils {
             Timber.i(ex);
         }
         return null;
+    }
+
+    public static Location getLocationFromJson(JsonObject json) {
+        Location location = new Location(json.get("provider").getAsString());
+        location.setAltitude(json.get("altitude").getAsDouble());
+        location.setLongitude
+                (json.get("longitude").getAsDouble());
+        location.setLatitude
+                (json.get("latitude").getAsDouble());
+        location.setTime
+                (json.get("time").getAsLong());
+        location.setAccuracy
+                (json.get("accuracy").getAsFloat());
+        location.setBearing
+                (json.get("bearing").getAsFloat());
+        location.setSpeed
+                (json.get("speed").getAsFloat());
+        return location;
+    }
+
+    public static Route getRouteFromDocumentSnap(DocumentSnapshot documentSnapshot) {
+        Route route = null;
+        if (documentSnapshot != null) {
+            route = new Route();
+            route.setLevel(documentSnapshot.getData().get("level").toString());
+            route.setId(documentSnapshot.getId());
+            route.setAverage_duration(new Long(documentSnapshot.getData().get("average_duration").toString()));
+            route.setComments(documentSnapshot.getData().get("comments").toString());
+            route.setCreated_at((Timestamp) documentSnapshot.getData().get("created_at"));
+            route.setName(documentSnapshot.getData().get("name").toString());
+            route.setCreated_by(documentSnapshot.getData().get("created_by").toString());
+            route.setDestination(getLocationFromJson((JsonObject) new Gson().toJsonTree(documentSnapshot.getData().get("destination"))));
+            route.setOrigin(getLocationFromJson((JsonObject) new Gson().toJsonTree(documentSnapshot.getData().get("origin"))));
+            ArrayList<Location> routeRoute = new ArrayList<>();
+            JsonArray locations = (JsonArray) new Gson().toJsonTree(documentSnapshot.getData().get("route"));
+            for (JsonElement location : locations) {
+                routeRoute.add(Utils.getLocationFromJson(location.getAsJsonObject()));
+            }
+            route.setDistance(new Float(documentSnapshot.getData().get("distance").toString()));
+            route.setRoute(routeRoute);
+            route.setSecurity(new Float(documentSnapshot.getData().get("security").toString()));
+            route.setVisitors(new Integer(documentSnapshot.getData().get("visitors").toString()));
+        }
+        return route;
+    }
+
+    @Nullable
+    public static Route getRouteFromJson(@NotNull JsonObject json) {
+        Route route = new Route();
+        route = new Route();
+
+        route.setLevel(json.get("level").toString());
+        route.setId(json.get("id").toString());
+        route.setAverage_duration(new Long(json.get("average_duration").toString()));
+        route.setComments(json.get("comments").toString());
+        route.setCreated_at(new Timestamp(json.get("created_at").getAsJsonObject().get("seconds").getAsLong(), json.get("created_at").getAsJsonObject().get("nanoseconds").getAsInt()));
+        route.setName(json.get("name").toString());
+        route.setCreated_by(json.get("created_by").toString());
+        route.setDestination(getLocationFromJson((JsonObject) new Gson().toJsonTree(json.get("destination"))));
+        route.setOrigin(getLocationFromJson((JsonObject) new Gson().toJsonTree(json.get("origin"))));
+        ArrayList<Location> routeRoute = new ArrayList<>();
+        JsonArray locations = (JsonArray) new Gson().toJsonTree(json.get("route"));
+        for (JsonElement location : locations) {
+            routeRoute.add(Utils.getLocationFromJson(location.getAsJsonObject()));
+        }
+        route.setDistance(new Float(json.get("distance").toString()));
+        route.setRoute(routeRoute);
+        route.setSecurity(new Float(json.get("security").toString()));
+        route.setVisitors(new Integer(json.get("visitors").toString()));
+        return route;
     }
 }

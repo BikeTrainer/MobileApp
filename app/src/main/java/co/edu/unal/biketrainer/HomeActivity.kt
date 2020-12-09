@@ -229,7 +229,6 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     .replace(R.id.nav_host_fragment, fragment).commit()
             }
             R.id.nav_groups -> {
-                println("opcion grupos")
                 nav_view.menu.clear()
                 nav_view.inflateMenu(R.menu.activity_submenu_drawer_groups)
             }
@@ -242,6 +241,22 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 val fragment = GroupsListFragment.newInstance(
                     user,
                     this.getString(R.string.menu_my_groups_list)
+                )
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.nav_host_fragment, fragment).commit()
+            }
+            R.id.groups_list -> {
+                val fragment = GroupsListFragment.newInstance(
+                    user,
+                    this.getString(R.string.menu_groups_list)
+                )
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.nav_host_fragment, fragment).commit()
+            }
+            R.id.recommended_groups -> {
+                val fragment = GroupsListFragment.newInstance(
+                    user,
+                    this.getString(R.string.recommended_groups)
                 )
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.nav_host_fragment, fragment).commit()

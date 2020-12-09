@@ -15,8 +15,6 @@
         mapbox:layout_constraintEnd_toEndOf="parent"
         mapbox:layout_constraintStart_toStartOf="parent"
         mapbox:layout_constraintTop_toTopOf="parent"
-        mapbox:mapbox_cameraTargetLat="36.16266"
-        mapbox:mapbox_cameraTargetLng="-86.78160"
         mapbox:mapbox_cameraZoom="12" />
 
     <androidx.appcompat.widget.AppCompatButton

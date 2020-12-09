@@ -12,10 +12,13 @@ import androidx.lifecycle.ViewModelProvider
 import co.edu.unal.biketrainer.R
 import co.edu.unal.biketrainer.R.layout
 import co.edu.unal.biketrainer.model.Group
+import co.edu.unal.biketrainer.model.Route
 import co.edu.unal.biketrainer.model.User
 import co.edu.unal.biketrainer.ui.groups.list.GroupsListFragment
 import co.edu.unal.biketrainer.ui.routes.GroupsViewModel
+import co.edu.unal.biketrainer.ui.routes.RoutesFragment
 import co.edu.unal.biketrainer.ui.routes.list.RoutesListFragment
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.fragment_groups.*
@@ -45,7 +48,7 @@ class GroupsFragment : Fragment(), RoutesListFragment.OnChildFragmentInteraction
     private var level: String? = null
     private var bikers: Int? = 2
     private var gpublic: Boolean? = false
-    private var id_route: String? = null
+    private var route: Route? = null
 
 
     private val db = FirebaseFirestore.getInstance()
@@ -64,44 +67,70 @@ class GroupsFragment : Fragment(), RoutesListFragment.OnChildFragmentInteraction
         return root
     }
 
-    override fun messageFromChildToParent(id_route: String?) {
+    override fun messageFromChildToParent(route: Route?) {
         Toast.makeText(
             this.requireContext(),
-            "Ruta seleccionada: " + id_route,
+            "Ruta seleccionada: " + route?.id,
             Toast.LENGTH_SHORT
         ).show()
-        this.id_route = id_route
+        this.route = route
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(GroupsViewModel::class.java)
 
+        val options: MutableList<String> =
+            this.resources.getStringArray(R.array.levels).toMutableList()
+
+        if (staticGroup != null) {
+            groupsNameEditText.setText(staticGroup!!.name)
+            groupsLevelSpinner.setSelection(options.indexOf(staticGroup!!.level))
+            groupsBikersSpinner.setSelection(options.indexOf(staticGroup!!.bikers))
+            groupPublicSwitch.isChecked = staticGroup!!.gpublic
+
+            val fragment =
+                RoutesFragment.newInstance(
+                    staticGroup!!
+                ) as RoutesFragment
+            requireActivity().supportFragmentManager.beginTransaction()
+                .replace(R.id.nav_routes_fragment, fragment).commit()
+        }
+
         groupsSaveButton.setOnClickListener {
             name = groupsNameEditText.text.toString()
             println(name)
 
-            if (groupPublicSwitch.isChecked){
+            if (groupPublicSwitch.isChecked) {
                 gpublic = true
             }
-            saveGroup()
+            if (route == null || name == null || level == null || bikers == null) {
+                Snackbar
+                    .make(this.requireView(), "Debes llenar todos los campos", Snackbar.LENGTH_LONG)
+                    .show()
+            } else {
+                saveGroup()
+            }
+
         }
 
 
         // Lista desplegable de la dificultad
-        groupsLevelSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+        groupsLevelSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
                 level = p0?.getItemAtPosition(p2).toString()
                 println(level)
-                val fragment =
-                    RoutesListFragment.newInstance(
-                        user,
-                        requireActivity().getString(R.string.groups_list_routes),
-                        level
-                    ) as RoutesListFragment
-                fragment.initialiseChildManagerInterface(mChildFragment!!)
-                requireActivity().supportFragmentManager.beginTransaction()
-                    ?.replace(R.id.nav_routes_fragment, fragment).commit()
+                if (staticGroup == null) {
+                    val fragment =
+                        RoutesListFragment.newInstance(
+                            user,
+                            requireActivity().getString(R.string.groups_list_routes),
+                            level
+                        ) as RoutesListFragment
+                    fragment.initialiseChildManagerInterface(mChildFragment!!)
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .replace(R.id.nav_routes_fragment, fragment).commit()
+                }
             }
 
             override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -110,7 +139,7 @@ class GroupsFragment : Fragment(), RoutesListFragment.OnChildFragmentInteraction
         }
 
         // Lista desplegable del numero de participantes
-        groupsBikersSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+        groupsBikersSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
                 bikers = p0?.getItemAtPosition(p2).toString().toInt()
                 println(bikers)
@@ -132,7 +161,7 @@ class GroupsFragment : Fragment(), RoutesListFragment.OnChildFragmentInteraction
         group.level = level
         group.bikers = bikers
         group.gpublic = gpublic!!
-        group.id_route = id_route
+        group.route = route
 
 
         // Enviar objeto a firebase en la collection groups
@@ -159,5 +188,8 @@ class GroupsFragment : Fragment(), RoutesListFragment.OnChildFragmentInteraction
 
     }
 
-
+    override fun onDestroyView() {
+        super.onDestroyView()
+        staticGroup = null
+    }
 }

@@ -15,6 +15,7 @@ data class Route(
     var created_by: String? = null,
     var average_duration: Long? = 0,
     var route: List<Location>? = null,
-    var visitors: Int? = 0
+    var visitors: Int? = 0,
+    var distance: Float? = 0f
 )
 

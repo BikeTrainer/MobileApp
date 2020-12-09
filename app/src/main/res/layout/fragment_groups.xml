@@ -22,23 +22,24 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:hint="Nombre"
-            android:inputType="textPersonName" />
+            android:inputType="textPersonName"
+            android:paddingVertical="10dp" />
 
         <Spinner
-            android:paddingVertical="5dp"
+            android:entries="@array/levels"
             android:id="@+id/groupsLevelSpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/groupsNameEditText"
-            android:entries="@array/levels"/>
+            android:paddingVertical="10dp" />
 
         <Spinner
-            android:paddingVertical="5dp"
+            android:entries="@array/bikers"
             android:id="@+id/groupsBikersSpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/groupsLevelSpinner"
-            android:entries="@array/bikers"/>
+            android:paddingVertical="10dp" />
 
         <Switch
             android:id="@+id/groupPublicSwitch"
@@ -48,6 +49,8 @@
             android:text="Grupo Publico" />
 
         <FrameLayout
+            android:layout_marginVertical="20dp"
+            android:padding="15dp"
             android:id="@+id/nav_routes_fragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

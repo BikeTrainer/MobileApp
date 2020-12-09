@@ -2,7 +2,6 @@ package co.edu.unal.biketrainer.ui.routes.list
 
 import android.app.AlertDialog
 import android.content.Context
-import android.location.Location
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,12 +13,9 @@ import co.edu.unal.biketrainer.R
 import co.edu.unal.biketrainer.model.Route
 import co.edu.unal.biketrainer.model.User
 import co.edu.unal.biketrainer.ui.routes.RoutesFragment
-import com.google.firebase.Timestamp
+import co.edu.unal.biketrainer.utils.Utils
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.google.gson.Gson
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
 import kotlinx.android.synthetic.main.fragment_routes_list.*
 import java.text.SimpleDateFormat
 
@@ -106,66 +102,7 @@ class RoutesListFragment : Fragment(), AdapterView.OnItemClickListener {
         collection.get()
             .addOnSuccessListener { query ->
                 query.documents.forEach {
-                    val route = Route()
-                    route.id = it.id
-                    route.average_duration =
-                        it?.data?.get("average_duration").toString().toLongOrNull()
-                    route.comments = it?.data?.get("comments").toString()
-                    route.created_at = (it?.data?.get("created_at") as Timestamp)
-                    route.created_by = it.data?.get("created_by").toString()
-                    var destination = Location(
-                        (Gson().toJsonTree(it.data?.get("destination")) as JsonObject).get("provider").asString
-                    )
-                    destination.altitude =
-                        (Gson().toJsonTree(it.data?.get("destination")) as JsonObject).get("altitude").asDouble
-                    destination.longitude =
-                        (Gson().toJsonTree(it.data?.get("destination")) as JsonObject).get("longitude").asDouble
-                    destination.latitude =
-                        (Gson().toJsonTree(it.data?.get("destination")) as JsonObject).get("latitude").asDouble
-                    destination.time =
-                        (Gson().toJsonTree(it.data?.get("destination")) as JsonObject).get("time").asLong
-                    destination.accuracy =
-                        (Gson().toJsonTree(it.data?.get("destination")) as JsonObject).get("accuracy").asFloat
-                    destination.bearing =
-                        (Gson().toJsonTree(it.data?.get("destination")) as JsonObject).get("bearing").asFloat
-                    destination.speed =
-                        (Gson().toJsonTree(it.data?.get("destination")) as JsonObject).get("speed").asFloat
-                    route.destination = destination
-                    route.level = it.data?.get("level").toString()
-                    route.name = it.data?.get("name").toString()
-                    var origin =
-                        Location((Gson().toJsonTree(it.data?.get("origin")) as JsonObject).get("provider").asString)
-                    origin.altitude =
-                        (Gson().toJsonTree(it.data?.get("origin")) as JsonObject).get("altitude").asDouble
-                    origin.longitude =
-                        (Gson().toJsonTree(it.data?.get("origin")) as JsonObject).get("longitude").asDouble
-                    origin.latitude =
-                        (Gson().toJsonTree(it.data?.get("origin")) as JsonObject).get("latitude").asDouble
-                    origin.time =
-                        (Gson().toJsonTree(it.data?.get("origin")) as JsonObject).get("time").asLong
-                    origin.accuracy =
-                        (Gson().toJsonTree(it.data?.get("origin")) as JsonObject).get("accuracy").asFloat
-                    origin.bearing =
-                        (Gson().toJsonTree(it.data?.get("origin")) as JsonObject).get("bearing").asFloat
-                    origin.speed =
-                        (Gson().toJsonTree(it.data?.get("origin")) as JsonObject).get("speed").asFloat
-                    route.origin = origin
-                    var routeRoute = ArrayList<Location>()
-                    (Gson().toJsonTree(it.data?.get("route")) as JsonArray).forEach { element ->
-                        var location = Location(element.asJsonObject.get("provider").asString)
-                        location.altitude = element.asJsonObject.get("altitude").asDouble
-                        location.longitude = element.asJsonObject.get("longitude").asDouble
-                        location.latitude = element.asJsonObject.get("latitude").asDouble
-                        location.time = element.asJsonObject.get("time").asLong
-                        location.accuracy = element.asJsonObject.get("accuracy").asFloat
-                        location.bearing = element.asJsonObject.get("bearing").asFloat
-                        location.speed = element.asJsonObject.get("speed").asFloat
-                        routeRoute.add(location)
-                    }
-                    route.route = routeRoute
-                    route.security = it.data?.get("security").toString().toFloatOrNull()
-                    route.visitors = it.data?.get("visitors").toString().toIntOrNull()
-                    items.add(route)
+                    items.add(Utils.getRouteFromDocumentSnap(it))
                     var adapter = RouteAdapter(
                         this.requireContext(),
                         android.R.layout.simple_list_item_1,
@@ -188,7 +125,9 @@ class RoutesListFragment : Fragment(), AdapterView.OnItemClickListener {
             this.activity?.supportFragmentManager?.beginTransaction()
                 ?.replace(R.id.nav_host_fragment, fragment)?.commit()
         } else {
-            mParentListener?.messageFromChildToParent(items[position].id)
+            parent?.alpha = 1f
+            view?.alpha = 0.1f
+            mParentListener?.messageFromChildToParent(items[position])
         }
     }
 
@@ -233,7 +172,7 @@ class RoutesListFragment : Fragment(), AdapterView.OnItemClickListener {
             level.text = route.level
             owner.text = route.created_by
             duration.text = SimpleDateFormat("HH:mm:ss").format(route.average_duration!!)
-            distance.text = "%.2f km".format(route.origin?.distanceTo(route.destination)?.div(1000))
+            distance.text = "%.2f km".format(route.distance?.div(1000))
 
             if (routesListFragment.email != route.created_by || type == context.getString(R.string.groups_list_routes)) {
                 deleteButton.visibility = View.INVISIBLE
@@ -255,7 +194,7 @@ class RoutesListFragment : Fragment(), AdapterView.OnItemClickListener {
 //                        ft?.detach(routesListFragment)
 //                        ft?.attach(routesListFragment)
 //                        ft?.commit()
-                        routesListFragment.refreshInterface?.refreshFragment()
+                        routesListFragment.refreshInterface?.refreshRoutesFragment()
                     }
                     .setNegativeButton("No") { dialog, id ->
                         dialog.dismiss()
@@ -280,11 +219,11 @@ class RoutesListFragment : Fragment(), AdapterView.OnItemClickListener {
     }
 
     interface RefreshInterface {
-        fun refreshFragment()
+        fun refreshRoutesFragment()
     }
 
     interface OnChildFragmentInteractionListener {
-        fun messageFromChildToParent(myString: String?)
+        fun messageFromChildToParent(route: Route?)
     }
 
 }

@@ -2,7 +2,6 @@ package co.edu.unal.biketrainer.ui.groups.list
 
 import android.app.AlertDialog
 import android.content.Context
-import android.location.Location
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,14 +14,13 @@ import co.edu.unal.biketrainer.model.Group
 import co.edu.unal.biketrainer.model.User
 import co.edu.unal.biketrainer.ui.groups.GroupsFragment
 import co.edu.unal.biketrainer.ui.routes.list.GroupsListViewModel
+import co.edu.unal.biketrainer.utils.Utils
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.gson.Gson
-import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import kotlinx.android.synthetic.main.fragment_groups_list.*
-import java.text.SimpleDateFormat
 
 class GroupsListFragment : Fragment(), AdapterView.OnItemClickListener {
 
@@ -37,6 +35,7 @@ class GroupsListFragment : Fragment(), AdapterView.OnItemClickListener {
         }
     }
 
+    private var refreshInferface: RefreshInterface? = null
     private lateinit var viewModel: GroupsListViewModel
     private val db = FirebaseFirestore.getInstance()
     private var items = ArrayList<Group>()
@@ -92,63 +91,13 @@ class GroupsListFragment : Fragment(), AdapterView.OnItemClickListener {
                     val group = Group()
                     group.id = it.id
 
-                    //group.comments = it?.data?.get("comments").toString()
                     group.created_at = (it?.data?.get("created_at") as Timestamp)
                     group.created_by = it.data?.get("created_by").toString()
-                    /*var destination = Location(
-                        (Gson().toJsonTree(it.data?.get("destination")) as JsonObject).get("provider").asString
-                    )
-                    destination.altitude =
-                        (Gson().toJsonTree(it.data?.get("destination")) as JsonObject).get("altitude").asDouble
-                    destination.longitude =
-                        (Gson().toJsonTree(it.data?.get("destination")) as JsonObject).get("longitude").asDouble
-                    destination.latitude =
-                        (Gson().toJsonTree(it.data?.get("destination")) as JsonObject).get("latitude").asDouble
-                    destination.time =
-                        (Gson().toJsonTree(it.data?.get("destination")) as JsonObject).get("time").asLong
-                    destination.accuracy =
-                        (Gson().toJsonTree(it.data?.get("destination")) as JsonObject).get("accuracy").asFloat
-                    destination.bearing =
-                        (Gson().toJsonTree(it.data?.get("destination")) as JsonObject).get("bearing").asFloat
-                    destination.speed =
-                        (Gson().toJsonTree(it.data?.get("destination")) as JsonObject).get("speed").asFloat*/
-                    //group.destination = destination
                     group.level = it.data?.get("level").toString()
                     group.name = it.data?.get("name").toString()
-                    /*var origin =
-                        Location((Gson().toJsonTree(it.data?.get("origin")) as JsonObject).get("provider").asString)
-                    origin.altitude =
-                        (Gson().toJsonTree(it.data?.get("origin")) as JsonObject).get("altitude").asDouble
-                    origin.longitude =
-                        (Gson().toJsonTree(it.data?.get("origin")) as JsonObject).get("longitude").asDouble
-                    origin.latitude =
-                        (Gson().toJsonTree(it.data?.get("origin")) as JsonObject).get("latitude").asDouble
-                    origin.time =
-                        (Gson().toJsonTree(it.data?.get("origin")) as JsonObject).get("time").asLong
-                    origin.accuracy =
-                        (Gson().toJsonTree(it.data?.get("origin")) as JsonObject).get("accuracy").asFloat
-                    origin.bearing =
-                        (Gson().toJsonTree(it.data?.get("origin")) as JsonObject).get("bearing").asFloat
-                    origin.speed =
-                        (Gson().toJsonTree(it.data?.get("origin")) as JsonObject).get("speed").asFloat*/
-                    //group.origin = origin
-                    /*var groupGroup = ArrayList<Location>()
-                    (Gson().toJsonTree(it.data?.get("group")) as JsonArray).forEach { element ->
-                        var location = Location(element.asJsonObject.get("provider").asString)
-                        location.altitude = element.asJsonObject.get("altitude").asDouble
-                        location.longitude = element.asJsonObject.get("longitude").asDouble
-                        location.latitude = element.asJsonObject.get("latitude").asDouble
-                        location.time = element.asJsonObject.get("time").asLong
-                        location.accuracy = element.asJsonObject.get("accuracy").asFloat
-                        location.bearing = element.asJsonObject.get("bearing").asFloat
-                        location.speed = element.asJsonObject.get("speed").asFloat
-                        groupGroup.add(location)
-                    }*/
                     group.bikers = it.data?.get("bikers").toString().toInt()
-                    //group.gpublic = it.data?.get("gpublic") as Boolean
-                    //group.group = groupGroup
-                    //group.security = it.data?.get("security").toString().toFloatOrNull()
-                    //group.visitors = it.data?.get("visitors").toString().toIntOrNull()
+                    group.route =
+                        Utils.getRouteFromJson(Gson().toJsonTree(it.data?.get("route")) as JsonObject)
                     items.add(group)
                     var adapter = GroupAdapter(
                         this.requireContext(),
@@ -167,6 +116,10 @@ class GroupsListFragment : Fragment(), AdapterView.OnItemClickListener {
             ?.replace(R.id.nav_host_fragment, fragment)?.commit()
         Toast.makeText(this.requireContext(), items[position].name.toString(), Toast.LENGTH_SHORT)
             .show()
+    }
+
+    fun intialiseRefreshInterface(refreshInterface: RefreshInterface?) {
+        this.refreshInferface = refreshInterface
     }
 
     private class GroupAdapter(
@@ -203,6 +156,7 @@ class GroupsListFragment : Fragment(), AdapterView.OnItemClickListener {
 
 
             val deleteButton = view.findViewById<ImageView>(R.id.delete)
+            var addMember = view.findViewById<ImageView>(R.id.add_member)
 
             val group = getItem(position) as Group
 
@@ -215,6 +169,8 @@ class GroupsListFragment : Fragment(), AdapterView.OnItemClickListener {
 
             if (groupsListFragment.email != group.created_by) {
                 deleteButton.visibility = View.INVISIBLE
+            } else {
+                addMember.visibility = View.INVISIBLE
             }
 
             deleteButton.setOnClickListener(View.OnClickListener {
@@ -236,12 +192,24 @@ class GroupsListFragment : Fragment(), AdapterView.OnItemClickListener {
                     }
                 val alert = builder.create()
                 alert.show()
-
-
             })
+
+            addMember.setOnClickListener {
+                if (group.members == null) {
+                    group.members = ArrayList()
+                }
+                group.members?.add(user!!)
+                groupsListFragment.db.collection("groups").document(group.id!!).update(
+                    hashMapOf("members" to group.members) as Map<String, Any>
+                )
+            }
 
             return view
         }
+    }
+
+    interface RefreshInterface {
+        fun refreshGroupsFragment()
     }
 
 

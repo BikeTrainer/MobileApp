@@ -30,8 +30,8 @@
     <string name="user_location_permission_explanation">Please, allow us to use your device location</string>
     <string name="user_location_permission_not_granted">Sorry, permissions not yet granted</string>
     <string name="new_location">New Location</string>
-    <string name="start_recording">START TRIP</string>
-    <string name="stop_recording">STOP RECORDING</string>
+    <string name="start_recording">¡COMENCEMOS!</string>
+    <string name="stop_recording">HEMOS TERMINADO</string>
     <string name="save_route">SAVE</string>
     <string name="menu_routes_record">Nueva Ruta</string>
     <string name="menu_routes_list">Rutas Disponibles</string>
@@ -61,6 +61,7 @@
     <string name="name_label_item_group">Grupo: </string>
     <string name="level_label_item_group">Nivel: </string>
     <string name="bikers_label_item_group">Participantes: </string>
+    <string name="for_you">Para ti</string>
 
     <string-array name="levels">
         <item>Principiante</item>
