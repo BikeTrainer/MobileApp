@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SeekBar
 import androidx.fragment.app.Fragment
 import co.edu.unal.biketrainer.R
 import co.edu.unal.biketrainer.model.Route
@@ -136,6 +137,8 @@ class AboutYouFragment : Fragment() {
 
                 }
             }
+        var experienceBar = root.findViewById<SeekBar>(R.id.experience_bar)
+        experienceBar.progress = 10
         return root
     }
 

@@ -129,8 +129,12 @@ class RoutesFragment : Fragment(), OnMapReadyCallback, PermissionsListener,
                 )
                 .build()
         }
+
         mapboxNavigation = mapboxNavigationOptions?.let { MapboxNavigation(it) }!!
-        startRecording.visibility = View.VISIBLE
+        if (staticRoute == null) {
+            startRecording.visibility = View.VISIBLE
+        }
+
         initListeners()
     }
 
