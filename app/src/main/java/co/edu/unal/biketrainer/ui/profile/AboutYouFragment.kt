@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SeekBar
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import co.edu.unal.biketrainer.R
 import co.edu.unal.biketrainer.model.Route
@@ -24,6 +25,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.android.synthetic.main.fragment_about_you.*
 import java.text.SimpleDateFormat
+import kotlin.math.roundToInt
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -81,7 +83,7 @@ class AboutYouFragment : Fragment() {
                         )
                         velocity.add(
                             ValueDataEntry(
-                                "%.2f m/s".format(currentDistance), it.speed
+                                "%.2f km".format(currentDistance), it.speed
                             )
                         )
                     }
@@ -137,8 +139,16 @@ class AboutYouFragment : Fragment() {
 
                 }
             }
+
         var experienceBar = root.findViewById<SeekBar>(R.id.experience_bar)
-        experienceBar.progress = 10
+        if(user?.experience != null){
+            experienceBar.progress = user?.experience!!.roundToInt()
+        } else {
+            experienceBar.progress = 0
+        }
+
+        var levelLabel = root.findViewById<TextView>(R.id.experience_level_label)
+        levelLabel.text = user?.level
         return root
     }
 

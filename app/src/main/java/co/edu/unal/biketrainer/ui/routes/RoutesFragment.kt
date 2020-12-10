@@ -237,6 +237,11 @@ class RoutesFragment : Fragment(), OnMapReadyCallback, PermissionsListener,
         route.route = routeCoordinates
         route.distance = distance
 
+        user?.experience = user?.experience?.plus(distance.div(5))
+        db.collection("users").document(user?.id!!).update(
+            hashMapOf("experience" to  user?.experience) as Map<String, Any>
+        )
+
         db.collection("routes").add(
             route
         )

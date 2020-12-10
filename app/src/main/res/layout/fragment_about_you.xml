@@ -6,6 +6,7 @@
     tools:context=".ui.profile.AboutYouFragment">
 
     <RelativeLayout
+        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -50,24 +51,41 @@
             android:layout_width="match_parent"
             android:layout_height="160dp"
             android:layout_below="@id/last_route_time"
-            android:layout_marginVertical="10dp" />
+            android:layout_marginVertical="10dp"/>
+
+        <TextView
+            android:id="@+id/experience_bar_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textSize="25dp"
+            android:text="¡Tu progreso!"
+            android:layout_below="@id/any_chart_view_speed" />
 
         <SeekBar
             android:id="@+id/experience_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/any_chart_view_speed"
+            android:layout_below="@id/experience_bar_label"
             android:layout_marginVertical="10dp"
             android:max="20"
             android:progress="5"
             android:progressDrawable="@drawable/custom_seekbar"
-            android:thumb="@drawable/custom_thumb" />
+            android:thumb="@drawable/ic_bike_icon" />
 
+        <TextView
+            android:textColor="@color/colorBikeTrainer"
+            android:id="@+id/experience_level_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textSize="15dp"
+            android:layout_below="@id/experience_bar" />
         <FrameLayout
             android:id="@+id/child_last_route_fragment_container"
             android:layout_width="match_parent"
             android:layout_height="160dp"
-            android:layout_below="@id/any_chart_view_speed"
+            android:layout_below="@id/experience_level_label"
             android:layout_marginVertical="10dp" />
 
     </RelativeLayout>
